@@ -1,4 +1,4 @@
-# il2212-forsyde
+# IL2212 Specification Model of the Application
 
 This package contains the executable specification of the image processing application used for the IL2212 Embedded Software lab project, provided as a ForSyDe-Haskell model. 
 

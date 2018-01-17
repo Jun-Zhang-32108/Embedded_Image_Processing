@@ -44,18 +44,14 @@ Make sure you each have an account on [gits-15.sys.kth.se](gits-15.sys.kth.se) (
 
    * Clone the newly created repository on your local machine:
 
-    ```
-    git clone <your_repository_ssh_url>
-    ```
+          git clone <your_repository_ssh_url>
   
    * [Add a remote to the main (public) repository](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes). Assuming that you have set up SSH authentication:
 
-    ```
-    cd <path/to/your/il2212_surname1_surname2>
-    git remote add public git@gits-15.sys.kth.se:ugeorge/il2212-project.git
-    git pull public master
-    git push origin
-    ```
+          cd <path/to/your/il2212_surname1_surname2>
+          git remote add public git@gits-15.sys.kth.se:ugeorge/il2212-project.git
+          git pull public master
+          git push origin
     
     - you now have a local copy with two remotes: `origin` is the remote to your private repository where you will commit your changes to; `public` is the remote to the original repository (`ugeorge/il2212-project`) where you get all the updates from.
 
