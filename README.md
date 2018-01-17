@@ -1,5 +1,5 @@
-
-#IL2212 - Embedded Software Lab
+IL2212 - Embedded Software Lab Project
+======================================
 
 This document presents a list of guidelines for a possible workflow in the IL2212 lab course. The scope of this lab is to:
 
@@ -19,8 +19,8 @@ Make sure you each have an account on [gits-15.sys.kth.se](gits-15.sys.kth.se) (
 
 1. The first thing that you need to do is to [set up Git on your virtual machine](https://help.github.com/enterprise/2.10/user/articles/set-up-git/#setting-up-git) using your KTH ID and credentials. This guide assumes you have set up your virtual machine according to the **Connecting over SSH** part and shall use the SSH URL as reference for the main (public) repository. Instructions can be found also on [KTH GitHub page](https://www.kth.se/student/kth-it-support/work-online/kth-github/github-read-me-first-1.500157).
 
- * If you use the virtual machine `git` is already installed. (Otherwise, you can install git from this [site](http://git-scm.com/).)
- * You need to generate _ssh keys_ and add them your `gits-15` account in order to gain access to the git repository. Please follow [this instruction](https://help.github.com/articles/generating-an-ssh-key/). (When you run the test in Step 5, give the name of the KTH server, i.e. `ssh -T git@gits-15.sys.kth.se`. Not _git@github.com_.) The procedure goes along the lines of:
+   * If you use the virtual machine `git` is already installed. (Otherwise, you can install git from this [site](http://git-scm.com/).)
+   * You need to generate _ssh keys_ and add them your `gits-15` account in order to gain access to the git repository. Please follow [this instruction](https://help.github.com/articles/generating-an-ssh-key/). (When you run the test in Step 5, give the name of the KTH server, i.e. `ssh -T git@gits-15.sys.kth.se`. Not _git@github.com_.) The procedure goes along the lines of:
         
           sudo apt-get install git
           git config --global user.name "name"
@@ -38,17 +38,17 @@ Make sure you each have an account on [gits-15.sys.kth.se](gits-15.sys.kth.se) (
           
           # copy the generated key found below to your GitHub account
           emacs ~/.ssh/id_rsa.pub
- * You can also install any GUI (`git-gui` and `gitk` are already there), but this guide will only use the command line interface. 
+   * You can also install any GUI (`git-gui` and `gitk` are already there), but this guide will only use the command line interface. 
     
 1. Each group of students registered in Canvas will receive an invitation from the teaching staff to be collaborator to a Git repository named along the lines of `il2212_surname1_surname2`. Once you accept the invitation, you need to:
 
- * Clone the newly created repository on your local machine:
+   * Clone the newly created repository on your local machine:
 
     ```
     git clone <your_repository_ssh_url>
     ```
   
- * [Add a remote to the main (public) repository](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes). Assuming that you have set up SSH authentication:
+   * [Add a remote to the main (public) repository](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes). Assuming that you have set up SSH authentication:
 
     ```
     cd <path/to/your/il2212_surname1_surname2>
