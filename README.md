@@ -3,9 +3,9 @@
 
 This document presents a list of guidelines for a possible workflow in the IL2212 lab course. The scope of this lab is to:
 
-* familiarize students with industrial tools and automatic design flows by opting for a free and open hands-on approach
-* enforce collaborative development through management tools like code versioning and issue tracking
-* challenge the design skills by requiring optimized solutions and giving the opportunity to apply theoretical knowledge in practice
+* familiarize students with industrial tools and automatic design flows by opting for a free and open hands-on approach;
+* enforce collaborative development through management tools like code versioning and issue tracking;
+* challenge the design skills by understanding the system requirements provided in a formal language and requiring optimized implementation solutions.
 
 By following these simple guidelines we are trying to ensure a smooth and efficient development flow not just for for the lab tasks, but for the lab itself. One must understand that these tools are far from "perfect" and the lab itself is a "playground" being continuously enhanced, but it is our duty as _engineers_ to ensure that everything works in a satisfactory manner and that the requirements are delivered efficiently. We also encourage any development effort and idea for raising the quality of education within this course.
 
@@ -17,7 +17,7 @@ Also, if you haven't done so already, please take your time to familiarize with 
 
 Make sure you each have an account on [gits-15.sys.kth.se](gits-15.sys.kth.se) (refer to the [KTH GitHub](https://www.kth.se/en/student/kth-it-support/work-online/kth-github/kth-github-1.500062) page).
 
-1. The first thing that you need to do is to [set up Git on your virtual machine](https://help.github.com/enterprise/2.7/user/articles/set-up-git/#platform-linux) using your KTH ID and credentials. This guide assumes you have set up your virtual machine according to the **Connecting over SSH** part and shall use the SSH URL as reference for the main (public) repository. Instructions can be found also on [KTH GitHub page](https://www.kth.se/student/kth-it-support/work-online/kth-github/github-read-me-first-1.500157).
+1. The first thing that you need to do is to [set up Git on your virtual machine](https://help.github.com/enterprise/2.10/user/articles/set-up-git/#setting-up-git) using your KTH ID and credentials. This guide assumes you have set up your virtual machine according to the **Connecting over SSH** part and shall use the SSH URL as reference for the main (public) repository. Instructions can be found also on [KTH GitHub page](https://www.kth.se/student/kth-it-support/work-online/kth-github/github-read-me-first-1.500157).
 
  * If you use the virtual machine `git` is already installed. (Otherwise, you can install git from this [site](http://git-scm.com/).)
  * You need to generate _ssh keys_ and add them your `gits-15` account in order to gain access to the git repository. Please follow [this instruction](https://help.github.com/articles/generating-an-ssh-key/). (When you run the test in Step 5, give the name of the KTH server, i.e. `ssh -T git@gits-15.sys.kth.se`. Not _git@github.com_.) The procedure goes along the lines of:
@@ -40,33 +40,24 @@ Make sure you each have an account on [gits-15.sys.kth.se](gits-15.sys.kth.se) (
           emacs ~/.ssh/id_rsa.pub
  * You can also install any GUI (`git-gui` and `gitk` are already there), but this guide will only use the command line interface. 
     
-1. Each group of students needs to (thanks @woidt for the simplified method):
-
- * [Create a new _private_ repository](https://help.github.com/enterprise/2.4/user/articles/creating-a-new-repository/):
-    - choose who among you is the administrator of the repository
-    - the repository has to be named: `il2212_surname1_surname2`, corresponding to the students' family names
-    - make sure it is private! Each group has to have an individual project.
-
- * [Add the following collaborators](https://help.github.com/articles/adding-collaborators-to-a-personal-repository/) to your repository:
-    - all students whithin a group
-    - the lab assistants: `ugeorge` (George), `mtme` (Mohamed) and `nkhal` (Nima)
+1. Each group of students registered in Canvas will receive an invitation from the teaching staff to be collaborator to a Git repository named along the lines of `il2212_surname1_surname2`. Once you accept the invitation, you need to:
 
  * Clone the newly created repository on your local machine:
 
     ```
-    git clone <your_repository_url>
+    git clone <your_repository_ssh_url>
     ```
   
  * [Add a remote to the main (public) repository](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes). Assuming that you have set up SSH authentication:
 
     ```
     cd <path/to/your/il2212_surname1_surname2>
-    git remote add public git@gits-15.sys.kth.se:ugeorge/il2212-mpsoc.git
+    git remote add public git@gits-15.sys.kth.se:ugeorge/il2212-project.git
     git pull public master
     git push origin
     ```
     
-    - you now have a local copy with two remotes: `origin` is the remote to your private repository where you will commit your changes to; `public` is the remote to the original repository (`ugeorge/il2212-mpsoc`) where you get all the updates from.
+    - you now have a local copy with two remotes: `origin` is the remote to your private repository where you will commit your changes to; `public` is the remote to the original repository (`ugeorge/il2212-project`) where you get all the updates from.
 
 1. Make sure you are [watching](https://help.github.com/enterprise/2.3/user/articles/be-social/) the public repository, so that you are notified in the GitHub news feed whenever a change has been made. In case this occurs, you must [merge](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging) all the public changes into your local work flow, e.g.:
 
@@ -101,10 +92,11 @@ Make sure you each have an account on [gits-15.sys.kth.se](gits-15.sys.kth.se) (
 ## Directory structure
 
 This repository is structured as follows:
- * `app` contains the soure code for each project. Here you can find the _hello world_ examples and our provided code snippets. Here is also where you shall implement your lab projects. It is advisable to create new folders for each new project, otherwise you will have to manage merge conflicts with each update of the main repository. Also, if you intend to reuse the provided build scripts, you should keep the directory structure suggested by the demo applications.
+ * `spec-model` contains the executable specification of the application you need to implement for the project. It is provided as a ForSyDe-Haskell project which implements a network of SDF processes, capturing the functional and extra-functional specifications. You need to install, run and understand this model. Refer to the [README](spec-model/README.md) file for more information.
+ * `app` contains the soure code for the project. Here you can find the _hello world_ examples and our provided code snippets. Here is also where you shall implement your lab projects. It is advisable to create new folders for each new project, otherwise you will have to manage merge conflicts with each update of the main repository. Also, if you intend to reuse the provided build scripts, you should keep the directory structure suggested by the demo applications.
  * `bsp` is where the the "board support package" (libraries, device drivers, etc.) will be generated. Unless you have good reasons, you should leave it untouched.
  * `hardware` is where the architecture/hardware files reside. You should check it out, but for this lab you are not supposed to modify anything.
- * `reports` is where you should write and submit the reports. For each lab the reports _have to_ be submitted in PDF format and named `lab<x>_<surname1>_<surname2>.pdf`, in their respective path  `reports/lab<x>`. They must use one of the templates provided in `reports/templates`, and should contain the lab session (morning/afternoon) in the subtitle.
+ * `reports` is where you should write and submit the report, named `il2212_<surname1>_<surname2>.pdf`. It must use one of the templates provided in `reports/templates`, and should contain the lab session (morning/afternoon) in the subtitle.
 
 ## Issues. Contributions
 
@@ -131,6 +123,6 @@ Here are some guidelines to ensure an efficient communication with the lab staff
 Here is a summary of the suggested workflow:
  * You create and clone a private repo. This is where you commit your work. The master branch shall contain your project in a compilable and runnable state.
  * The lab results (along with the other requirements) shall be present in the lab report, also available in the master branch under its respective directory path. They will be compared against the results given by the program's runtime.
- * Your local clone shall have a remote to the current public repository (git@gits-15.sys.kth.se:ugeorge/il2212-mpsoc.git), from where you have to (regularly) pull updates.
+ * Your local clone shall have a remote to the current public repository (git@gits-15.sys.kth.se:ugeorge/il2212-project.git), from where you have to (regularly) pull updates.
  * You are advised to use separate branches for different work packages which are regularly merged into the master branch. You are also advised to take advantage of the issue tracker to micromanage your work packages.
  * If you are assigned a specific task by the lab staff, you need to take care of it and announce (via tags or issue re-assignment) once it is fixed. 
