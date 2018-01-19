@@ -8,9 +8,10 @@ This Haskell project uses the [Cabal](https://www.haskell.org/cabal/) package ma
 
 The following guide focuses on installing on the lab VM (Ubuntu Linux OS), where most of the dependencies are pre-installed. The procedure is similar for other OS, provided you have installed the [Haskell Platform](https://www.haskell.org/platform/). The lab VM has most of the dependencies pre-installed.
 
-First, open a terminal (`Ctrl`+`T`), and copy/paste the following line:
+First, open a terminal (`Ctrl`+`T`), and copy/paste the following lines:
 
-    echo "PATH=\$PATH:~/.cabal/bin" >> .bashrc
+    echo "export PATH=\$PATH:~/.cabal/bin" >> ~/.bashrc
+    source ~/.bashrc 
 
 Provided you have set up the Git repository properly, `cd` into the `spec-model` folder and type in:
 
