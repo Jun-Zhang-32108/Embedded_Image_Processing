@@ -92,7 +92,6 @@ This repository is structured as follows:
  * `app` contains the soure code for the project. Here you can find the _hello world_ examples and our provided code snippets. Here is also where you shall implement your lab projects. It is advisable to create new folders for each new project, otherwise you will have to manage merge conflicts with each update of the main repository. Also, if you intend to reuse the provided build scripts, you should keep the directory structure suggested by the demo applications.
  * `bsp` is where the the "board support package" (libraries, device drivers, etc.) will be generated. Unless you have good reasons, you should leave it untouched.
  * `hardware` is where the architecture/hardware files reside. You should check it out, but for this lab you are not supposed to modify anything.
- * `reports` is where you should write and submit the report, named `il2212_<surname1>_<surname2>.pdf`. It must use one of the templates provided in `reports/templates`, and should contain the lab session (morning/afternoon) in the subtitle.
 
 ## Issues. Contributions
 
@@ -104,12 +103,11 @@ If you know how to solve an opened issue and would like to contribute to the dev
 
 ## Communication with the lab staff
 
-Here are some guidelines to ensure an efficient communication with the lab staff:
+Here are some guidelines to ensure an efficient communication with the staff concerning the lab project:
  * use the issue tracker to manage and track your development between group members. If an _important_ issue involves the lab staff, you can either tag staff member(s) (`@<user_name>`) in the issue message, or include them in the assignee list. Remember that the asnwer might arrive very late, so please use this feature only when it is really necessary, or when you are instructed to do so.
  * the lab staff will not debug your code or take care of the issues. It is your duty to do that.
- * in case your issue concerns all students, you are advised to post your question on the [FAQ page](https://www.kth.se/social/course/IL2212/page/questions-and-answers-3/) on the course web, where it is more likely to get a fast answer from your peers.
+ * in case your issue concerns all students, you are advised to post your question on the Canvas discussion page, where it is more likely to get a fast answer from your peers.
  * the lab staff can assign issues to your group in the following cases:
-   * before the lab session, if the report submitted has major problems, and _needs_ to be revised before the session, in order to be allowed to show the lab. This might also include technical problems such as wrong document format, wrong path or wrong branch.
    * during the lab session, based on the outcome of checking the lab. You will be asked to write the issues on your own laptop, and announce the staff after solving it via the issue tracker.
    * after the issue has been checked, if the solution is unsatisfactory. 
  * **OBS**: you are not supposed to close an issue opened by the lab staff. The staff will close the issue after checking if the solution is correct.
@@ -118,7 +116,7 @@ Here are some guidelines to ensure an efficient communication with the lab staff
 
 Here is a summary of the suggested workflow:
  * You create and clone a private repo. This is where you commit your work. The master branch shall contain your project in a compilable and runnable state.
- * The lab results (along with the other requirements) shall be present in the lab report, also available in the master branch under its respective directory path. They will be compared against the results given by the program's runtime.
+ * The lab results (along with the other requirements) shall be present in the lab report which is submitted to Canvas as an assignment. They will be compared against the results given by the program's runtime.
  * Your local clone shall have a remote to the current public repository (git@gits-15.sys.kth.se:ugeorge/il2212-project.git), from where you have to (regularly) pull updates.
- * You are advised to use separate branches for different work packages which are regularly merged into the master branch. You are also advised to take advantage of the issue tracker to micromanage your work packages.
+ * You are advised to use separate branches for different work packages which are regularly merged into the master branch. You are also advised to take advantage of the issue tracker to micromanage yourselves your work packages.
  * If you are assigned a specific task by the lab staff, you need to take care of it and announce (via tags or issue re-assignment) once it is fixed. 
