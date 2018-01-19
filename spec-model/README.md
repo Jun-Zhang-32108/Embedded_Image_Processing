@@ -24,6 +24,7 @@ Provided you have set up the Git repository properly, `cd` into the `spec-model`
 	
 In order to generate de HTML documentation for the (rather old) Cabal version installed on the VM, use the provided `Makefile` script:
 
+    cabal install hscolour   # only the first time
     make doc
 
 On a newer version of [Haskell Platform](https://www.haskell.org/platform/), one would instead run `cabal haddock`. A HTML page will be generated under the `dist` folder, and its path will be printed out on the terminal. Open it using a browser of your choice, and study it. E.g.:
