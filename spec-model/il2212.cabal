@@ -25,7 +25,7 @@ executable process-image
   other-modules:       IL2212.ImageProcessing
                      , IL2212.Utilities
                      , IL2212.TestBench
-  build-depends:       base >=4.10 && <6
+  build-depends:       base >=4.6 && <6
                      , forsyde-shallow >= 3.3.2
                      , directory >= 1.2.5.0
   default-language:    Haskell2010
@@ -36,5 +36,5 @@ library
                      , IL2212.Utilities
                      , IL2212.TestBench
   build-depends:       forsyde-shallow >= 3.3.2
-                     , base >= 4.10 && < 6
+                     , base >= 4.6 && < 6
   default-language:    Haskell2010
