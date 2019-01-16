@@ -26,7 +26,7 @@ Now it is time to install the current Haskell project:
 	cd <path/to>/il2212-lab/model
 	stack install
 	
-This will download and install a specific version of the GHC compiler and all the dependent packages. This takes several minutes, so be patient. Once it is finished you will be prompted that a new library (`il2212`) has been registered and a new executable has been placed into your `$PATH`. We will come back shortly to these two and their usage. For now, congratulations! You can take a break and pat yourself on the back, because you have just installed your (probably) first Haskell package :smile: !
+This will download and install a specific version of the GHC compiler and all the dependent packages. This takes several minutes, so be patient. Once it is finished you will be prompted that a new library `il2212` has been registered and a new executable has been placed into your `$PATH`. We will come back shortly to these two and their usage. For now, congratulations! You can take a break and pat yourself on the back, because you have just installed your (probably) first Haskell package! :smile:
  
 ## Working with Documentations
 
@@ -79,7 +79,7 @@ Finally, you can test individual functions defined in the `Tracker` module by lo
 	
 This compiles and loads both the `Tracker` and the `Utilities` modules, along with Haskell's `Prelude`. You can always exit the session with `Ctrl`+`D`.
 
-By now you should know that inside a GHCi session, you can run any Haskell function and get the result immediately, making it an ideal environment for testing and learning. Assuming that you have gone through the chapters and the documents suggested in the section [Working with Documentations](working-with-documentations), let us test the function `xcorr2` defined in the `Tracker` module (consult the API documentations at the same time):
+By now you should know that inside a GHCi session, you can run any Haskell function and get the result immediately, making it an ideal environment for testing and learning. Assuming that you have gone through the chapters and the documents suggested in the section [Working with Documentations](#working-with-documentations), let us test the function `xcorr2` defined in the `Tracker` module (consult the API documentations at the same time):
 
 
 
