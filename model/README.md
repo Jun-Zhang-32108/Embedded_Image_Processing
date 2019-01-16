@@ -1,277 +1,144 @@
-# il2212-forsyde
+# ForSyDe Model of the IL2212 Application
 
 This package contains the executable specification of the image processing application used for the IL2212 Embedded Software lab project, provided as a ForSyDe-Haskell model. 
 
 ## Installing
 
-This Haskell project uses the [Cabal](https://www.haskell.org/cabal/) package manager to generate a binary file, a library and a HTML documentation. You can install this package on the provided virtual machine or on your own host machine, depending on your preferences. While for larger projects we would advise installing packages using [Stack](https://docs.haskellstack.org/en/stable/README/) or [sandboxes](http://coldwa.st/e/blog/2013-08-20-Cabal-sandbox.html), for the scope of this lab a global `cabal` installation suffices. 
+This Haskell project is shipped as a [Cabal](https://www.haskell.org/cabal/) package which specifies all the dependencies to install, test and be executed both as a binary program or as a library in an interpreter session. For the scope of this lab we strongly recommend installing this package using the[Stack](https://docs.haskellstack.org/en/stable/README/) program, which takes care of acquiring all the dependencies and the right Haskell compiler version (GHC) and sets them up in a safe and isolated sandbox using a minimalistic set of CLI commands. 
 
-The following guide focuses on installing on the lab VM (Ubuntu Linux OS), where most of the dependencies are pre-installed. The procedure is similar for other OS, provided you have installed the [Haskell Platform](https://www.haskell.org/platform/). The lab VM has most of the dependencies pre-installed.
+The following guide focuses on installing on the lab VM (Ubuntu Linux OS), but for other OS the procedure should be similar.
 
 First, open a terminal (`Ctrl`+`T`), and copy/paste the following line:
 
-    echo "PATH=\$PATH:~/.cabal/bin" >> .bashrc
+    echo "PATH=\$PATH:~/.local/bin" >> ~/.bashrc
+	source ~/.bashrc
 
-Provided you have set up the Git repository properly, `cd` into the `spec-model` folder and type in:
+Now you need to acquire and install the latest version of the [Stack](https://docs.haskellstack.org/en/stable/README/) program. Type in:
 
-    cd <repo_root>/spec-model
-	cabal update
-	cabal install
-	cabal build
+	wget -qO- https://get.haskellstack.org/ | sh
+
+You will be prompted to enter your sudo password, do so. When the program finished installing (you see the command prompt again) you need to uptade its repository snapshots, to reflect the latest updates:
+
+	stack update
 	
-## Generating the documentation
+Now it is time to install the current Haskell project:
+
+	cd <path/to>/il2212-lab/model
+	stack install
 	
-In order to generate de HTML documentation for the (rather old) Cabal version installed on the VM, use the provided `Makefile` script:
+This will download and install a specific version of the GHC compiler and all the dependent packages. This takes several minutes, so be patient. Once it is finished you will be prompted that a new library (`il2212`) has been registered and a new executable has been placed into your `$PATH`. We will come back shortly to these two and their usage. For now, congratulations! You can take a break and pat yourself on the back, because you have just installed your (probably) first Haskell package :smile: !
+ 
+## Working with Documentations
 
-    make doc
+In order to extract the functional specification of the lab application you will need to be able to read both Haskell source code and available documentation resources. If you haven't dealt with functional programming in the past, reading a Haskell program can be scary at the beginning. However once you get past the first impressions and understand some _basic_ principles on the program syntax, extracting a functional specification from a ForSyDe-Haskell program boils down to drawing the program on a sheet of paper while consulting available API documentations to understand what each function is doing. 
 
-On a newer version of [Haskell Platform](https://www.haskell.org/platform/), one would instead run `cabal haddock`. A HTML page will be generated under the `dist` folder, and its path will be printed out on the terminal. Open it using a browser of your choice, and study it. E.g.:
+Here are the main documentation resources which you will be using for this task:
 
-    firefox dist/doc/html/il2212/index.html
+ * [This book](learnyouahaskell.com) is a practical way to get introduced to the Haskell language. We _strongly_ recommend reading and trying out the examples in chapters [Starting Out](http://learnyouahaskell.com/starting-out) and [Syntax in Functions](http://learnyouahaskell.com/syntax-in-functions) before you start with this lab task. Also recommended are chapters [Types and Type Classes](http://learnyouahaskell.com/types-and-typeclasses) and [Higher Order Functions](http://learnyouahaskell.com/higher-order-functions). Opening an interpreter session is done a bit different than in the book, since you did not install Haskell platform manually: instead of typing in the command `ghci` you need to call
+ 
+		stack ghci --no-load
 	
-## Running the testbench binary
+ * The [ForSyDe-Shallow](http://hackage.haskell.org/package/forsyde-shallow) API documentation. This model contains functions exported by the [`ForSyDe.Shallow.MoC.SDF`](http://hackage.haskell.org/package/forsyde-shallow-3.4.0.0/docs/ForSyDe-Shallow-MoC-SDF.html), [`ForSyDe.Shallow.Core.Vector`](http://hackage.haskell.org/package/forsyde-shallow-3.4.0.0/docs/ForSyDe-Shallow-Core-Vector.html) and [`ForSyDe.Shallow.Utility.Matrix`](http://hackage.haskell.org/package/forsyde-shallow-3.4.0.0/docs/ForSyDe-Shallow-Utility-Matrix.html) libraries, so have these documents close by.
+ 
+ * The source code for the application model is exported by the file [`src/Tracker.hs`](src/Tracker.hs). This file you will need to read and understand. You can also load and test its functions in an [interpreter session](#testing-functions-in-an-interpreter-session). 
+ 
+ * The API documentation generated by this package. To generate it you need to call:
+ 
+		# cd <path/to>/il2212-lab/model
+		stack haddock
+		
+	This command will generate locak documentation for this package _and_ all the dependencies, so that the links work correctly. However, you are interested only in the current package. The location of the page you need to open is printed out among the last output lines of the previous command, and the one you are interested in is under the line
 	
-To run the generated executable program, type in:
+		Updating Haddock index for local packages in
+		<...>/il2212-lab/model/.stack-work/install/<...>/doc/index.html
 
-    process-image path/to/test-image-folder
+	Open that file in a web browser, e.g.
 	
-For example:
-
-    student@il2212:~/il2212-project/spec-model$ process-image images/flag_tiny_mix/
-         +U==U=           
-         +U==U=           
-         +U==U=           
-         +U==U=           
-    UUUUUUz--zUUUUUUUUUUUU
-    UUUUUz+..+zUUUUUUUUUUU
-                          
-    UUUUUz+..+zUUUUUUUUUUU
-    UUUUUUz--zUUUUUUUUUUUU
-         +U==U=           
-         +U==U=           
-         +U==U=           
-         +U==U=           
-         +U==U=           
-         +U==U=           
-         +U==U=           
-         +U==U=           
-    UUUUUUz--zUUUUUUUUUUUU
-    UUUUUz+..+zUUUUUUUUUUU
-                          
-    UUUUUz+..+zUUUUUUUUUUU
-    UUUUUUz--zUUUUUUUUUUUU
-         +U==U=           
-         +U==U=           
-         +U==U=           
-         +U==U=           
-                          
-                          
-                          
-                          
-                          
-                          
-                          
-                          
-                          
-                          
-                          
-                          
-                          
-         +U==U=           
-         +U==U=           
-         +U==U=           
-         +U==U=           
-    UUUUUUz--zUUUUUUUUUUUU
-    UUUUUz+..+zUUUUUUUUUUU
-                          
-    UUUUUz+..+zUUUUUUUUUUU
-    UUUUUUz--zUUUUUUUUUUUU
-         +U==U=           
-         +U==U=           
-         +U==U=           
-         +U==U=           
-         -t=-t=           
-         -t=-t=           
-         -t=-t=           
-         -t--t=           
-    ttttttt--/tttttttttttt
-    ttttt/=..=/ttttttttttt
-                          
-    ttttt/=..=/ttttttttttt
-    tttttt/-:/tttttttttttt
-         -t--t=           
-         -t=-t=           
-         -t=-t=           
-         -t=-t=           
-         -t=-t=           
-         -t=-t=           
-         -t=-t=           
-         -t--t=           
-    ttttttt--/tttttttttttt
-    ttttt/=..=/ttttttttttt
-                          
-    ttttt/=..=/ttttttttttt
-    tttttt/-:/tttttttttttt
-         -t--t=           
-         -t=-t=           
-         -t=-t=           
-         -t=-t=           
-         +U==U=           
-         +U==U=           
-         +U==U=           
-         +U==U=           
-    UUUUUUz--zUUUUUUUUUUUU
-    UUUUUz+..+zUUUUUUUUUUU
-                          
-    UUUUUz+..+zUUUUUUUUUUU
-    UUUUUUz--zUUUUUUUUUUUU
-         +U==U=           
-         +U==U=           
-         +U==U=           
-         +U==U=  
-
-You can make your own picture test suite, by collecting PPM images into a folder. Make sure that the `.ppm` files do not contain comment lines (i.e. starting with `#`), and that all images in one folder have the same dimensions.
-
-## Testing functions in an interpreter
-
-Finally, in order to test the individual functions of the library, you need to open an interpreter session and load the needed modules. The GHCi interpreter is called with:
-
-    ghci
+		firefox .stack-work/install/<...>/doc/index.html
+		
+    We have provided a bunch of utility functions in the module `Utilities` which might come in handy in the interpreter session.
 	
-You can always exit the session with `Ctrl`+`D`.
+ * Finally, if you see a function and don't find its documentation anywhere in the resources above, you will surely find it by typing its name in [Hoogle](https://www.haskell.org/hoogle/) (<- not a typo).
+	
+## Running the Model Binary
+	
+This package also contains an executable program which imports the model modules and wraps them in a binary. To print out its usage type in
 
-When inside a GHCi session, you can run any Haskell function and get the result immediately, making it an ideal environment for testing and learning. Get started by testing Haskell code snippets. For understanding Haskell syntax and the usage of GHCi refer to (at least) chapters 1 - 4, 6 and the first section of chapter 7 of [this great online book](http://learnyouahaskell.com/chapters), ideally testing in the interpreter while reading. Excerpt from an interpreter session:
+	il2212-track -h
+	
+Example usage:
 
-    student@il2212:~/il2212-project/spec-model$ ghci
-    GHCi, version 7.6.3: http://www.haskell.org/ghc/  :? for help
-    Prelude> 1 + 2                 -- basic syntax, Ch.2
-    3
-    Prelude> :t 1                  -- types and type classes, Ch.3
-    1 :: Num p => p
-    Prelude> :t (+)                -- types and functions, Ch.3 and 4
-    (+) :: Num a => a -> a -> a
-    Prelude> :t (+ 1)              -- partial application/curried functions, Ch.6
-    (+ 1) :: Num a => a -> a
-    Prelude> let a = 1 :: Int      -- 'let' notation, Ch.4
-    Prelude> :t a
-    a :: Int
-    Prelude> a + 2
-    3
-    Prelude> :t a + 2
-    a + 2 :: Int
-	Prelude> let x = [1..5]        -- lists intro, Ch.2
-    Prelude> x
-    [1,2,3,4,5]
-    Prelude> :t x
-    x :: (Num a, Enum a) => [a]
-    Prelude> map (+1) x            -- higher-order functions, Ch.6
-    [2,3,4,5,6]
-    Prelude> :t map (+1) x
-    map (+1) x :: (Enum b, Num b) => [b]
-    Prelude> :info Int             -- info command. types and type classes, Ch.3
-    data Int = GHC.Types.I# GHC.Prim.Int# 	-- Defined in ‘GHC.Types’
-    instance Eq Int -- Defined in ‘GHC.Classes’
-    instance Ord Int -- Defined in ‘GHC.Classes’
-    instance Show Int -- Defined in ‘GHC.Show’
-    instance Read Int -- Defined in ‘GHC.Read’
-    instance Enum Int -- Defined in ‘GHC.Enum’
-    instance Num Int -- Defined in ‘GHC.Num’
-    instance Real Int -- Defined in ‘GHC.Real’
-    instance Bounded Int -- Defined in ‘GHC.Enum’
-    instance Integral Int -- Defined in ‘GHC.Real’
-    
+	il2212-track -cio <path/to/>il2212-lab/test/test-ppm
+
+## Testing Functions in an Interpreter Session
+
+Finally, you can test individual functions defined in the `Tracker` module by loading its source file in an interpreter session:
+
+	cd <path/to/>il2212-lab/model
+    stack ghci src/Tracker.hs
+	
+This compiles and loads both the `Tracker` and the `Utilities` modules, along with Haskell's `Prelude`. You can always exit the session with `Ctrl`+`D`.
+
+By now you should know that inside a GHCi session, you can run any Haskell function and get the result immediately, making it an ideal environment for testing and learning. Assuming that you have gone through the chapters and the documents suggested in the section [Working with Documentations](working-with-documentations), let us test the function `xcorr2` defined in the `Tracker` module (consult the API documentations at the same time):
+
+
+
 Your job will be to clearly understand the application specification, and a good practice to do that, apart from going through the code and through the documentation, is to test snippets and functions in the interpreter directly. As such, you would load in the interpreter either source files or, in this case, import library modules and test directly the functions or parts of the functions exported. 
 
 For example, to test the `resize` functions exported by the `IL2212.ImageProcessing` module, you would roughly perform the following steps (consulting the generated documentation at the same time):
 
-    Prelude> import IL2212.ImageProcessing as Img          -- load functions exported by this module
-    Prelude Img> import IL2212.Utilities as U              -- the 'as' notation is to give a short alias to the module
-    Prelude Img U> ppm <- readFile "images/flag_tiny_good/flag_tiny_01.ppm"  -- the '<-' assignment is used for non-pure I/O functions
-    Prelude Img U> let img = grayscale $ ppm2img ppm       -- the 'let' assignment is used for pure functions
-    Prelude Img U> printImage $ mapMatrix truncate img     -- notation 'f $ g x' is equivalent to 'f (g x)'
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <78,78,78,78,78,78,78,78,78,78,126,196,194,194,172,77,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78>
-    <198,198,198,198,198,198,198,198,198,198,197,193,194,194,195,199,198,198,198,198,198,198,198,198,198,198,198,198,198,198,198,198,198,198>
-    <194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194>
-    <194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194,194>
-    <198,198,198,198,198,198,198,198,198,198,197,193,194,194,195,199,198,198,198,198,198,198,198,198,198,198,198,198,198,198,198,198,198,198>
-    <78,78,78,78,78,78,78,78,78,78,126,196,194,194,172,77,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,80,80,80,80,80,130,196,194,194,173,79,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80>
-    Prelude Img U> let smallImg = resize img
-    Prelude Img U> printImage $ mapMatrix truncate smallImg 
-    <80,80,80,80,80,163,194,126,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,163,194,126,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,163,194,126,80,80,80,80,80,80,80,80,80>
-    <79,79,79,79,79,162,194,125,79,79,79,79,79,79,79,79,79>
-    <196,196,196,196,196,194,194,195,196,196,196,196,196,196,196,196,196>
-    <196,196,196,196,196,194,194,195,196,196,196,196,196,196,196,196,196>
-    <79,79,79,79,79,162,194,125,79,79,79,79,79,79,79,79,79>
-    <80,80,80,80,80,163,194,126,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,163,194,126,80,80,80,80,80,80,80,80,80>
-    <80,80,80,80,80,163,194,126,80,80,80,80,80,80,80,80,80>
-    
-Another example: say you do not understand the construction of the function `resize`. In this case you would reconstruct it step-by-step, as seen in the source code:
+	*Tracker> :t xPATTERN                        -- the xPATTERN matrix defines the shape which needs to be tracked
+	xPATTERN :: Matrix Double
+	*Tracker> prettyMat " | " xPATTERN           -- pretty-prints the xPATTERN matrix with pipes in-between values
+	0.0 | 0.0 | 1.0 | 0.0 | 0.0
+	0.0 | 1.0 | 0.0 | 1.0 | 0.0
+	1.0 | 0.0 | 0.0 | 0.0 | 1.0
+	0.0 | 1.0 | 0.0 | 1.0 | 0.0
+	0.0 | 0.0 | 1.0 | 0.0 | 0.0
+	*Tracker> ppm <- readFile "../test/test-ppm/circ1.ppm" -- the '<-' assignment is used for non-pure I/O functions
+    *Tracker> let img = grayscale $ ppm2img ppm  -- the 'let' assignment is used for pure functions
+	*Tracker> prettyMat " " img                  -- pretty-prints the grayed image. However, since it is too large, the numbers are unreadable
+	(...)
+	*Tracker> printAscii' img                    -- a better way to visualize large images using printAscii' exported by Utilities
+	*Tracker> let ximg = xcorr2 xPATTERN img
+	*Tracker> printAscii' ximg
+	
+Another example: say you do not understand the construction of the function `posMax`. In this case you would reconstruct it step-by-step, as seen in the source code:
 
-    resize = mapMatrix (/ 4) . sumRows . sumCols
-      where
-        sumCols = mapV (mapV (reduceV (+)) . groupV 2)
-        sumRows = mapV (reduceV (zipWithV (+))) . groupV 2
+	posMax img = [cX, cY]
+	  where
+	    ((cX,cY),_) = reduceMat findMax $ zipMat indexMat img
+	    findMax (c1,v1) (c2,v2) | v1 >= v2  = (c1,v1)
+	                            | otherwise = (c2,v2)
 
 As an exercise, let us reconstruct what is happening in internal function `sumCols`, by using a dummy matrix as image:
 
-	Prelude Img U V> import ForSyDe.Shallow.Vector as V
-    Prelude Img U V> let v = vector [1..9]
-    Prelude Img U V> let dummy = vector [v,v,v,v]
-    Prelude Img U V> dummy
-    <<1,2,3,4,5,6,7,8,9>,<1,2,3,4,5,6,7,8,9>,<1,2,3,4,5,6,7,8,9>,<1,2,3,4,5,6,7,8,9>>
-    Prelude Img U V> printImage dummy 
-    <1,2,3,4,5,6,7,8,9>
-    <1,2,3,4,5,6,7,8,9>
-    <1,2,3,4,5,6,7,8,9>
-    <1,2,3,4,5,6,7,8,9>
-    Prelude Img U V> :t groupV 
-    groupV :: Int -> Vector a -> Vector (Vector a)
-    Prelude Img U V> let f1 = mapV (groupV 2)
-    Prelude Img U V> :t f1
-    f1 :: Vector (Vector a) -> Vector (Vector (Vector a))
-    Prelude Img U V> printImage $ f1 dummy 
-    <<1,2>,<3,4>,<5,6>,<7,8>>
-    <<1,2>,<3,4>,<5,6>,<7,8>>
-    <<1,2>,<3,4>,<5,6>,<7,8>>
-    <<1,2>,<3,4>,<5,6>,<7,8>>
-    Prelude Img U V> let f2 = mapV (reduceV (+))
-    Prelude Img U V> :t f2
-    f2 :: Num b => Vector (Vector b) -> Vector b
-    Prelude Img U V>  f2 dummy 
-    <45,45,45,45>
-    Prelude Img U V> let f3 = mapV (mapV (reduceV (+)) . groupV 2)
-    Prelude Img U V> :t f3
-    f3 :: Num b => Vector (Vector b) -> Vector (Vector b)
-    Prelude Img U V> printImage $ f3 dummy 
-    <3,7,11,15>
-    <3,7,11,15>
-    <3,7,11,15>
-    <3,7,11,15>
+    *Tracker> let dummy = matrix 4 3 $ [1..5] ++ [20] ++ [1..6]
+    *Tracker> prettyMat " " dummy 
+	1  2 3 4
+	5 20 1 2
+	3  4 5 6
+	*Tracker> prettyMat " " $ takeMat 4 3 indexMat 
+	(0,0) (1,0) (2,0) (3,0)
+	(0,1) (1,1) (2,1) (3,1)
+	(0,2) (1,2) (2,2) (3,2)
+	*Tracker> let idummy = zipMat indexMat dummy 
+	*Tracker> prettyMat " " idummy 
+	((0,0),1)  ((1,0),2) ((2,0),3) ((3,0),4)
+	((0,1),5) ((1,1),20) ((2,1),1) ((3,1),2)
+	((0,2),3)  ((1,2),4) ((2,2),5) ((3,2),6)
+	*Tracker> let findMaxIdx (c1,v1) (c2,v2) = if v1 >= v2 then (c1,v1) else (c2,v2)
+	*Tracker> :t findMaxIdx 
+	findMaxIdx :: Ord b => (a, b) -> (a, b) -> (a, b)
+	*Tracker> let found = reduceMat findMaxIdx idummy 
+	*Tracker> found 
+	((1,1),20)
+	*Tracker> let outIdxAsList ((a,b),_) = [a,b]
+	*Tracker> outIdxAsList found 
+	[1,1]
+	*Tracker> posMax dummy 
+	[1,1]
     
 Hopefully the above exercises served as an appetizer to get your hands dirty with this ForSyDe-Haskell model. Understanding the system specification at such an abstraction level, albeit far from a specific implementation, enlarges the possible design space and opens up potential ways for alternative mappings and for exploiting various platforms. 
-
-Good materials for helping with language or library related issues, which you should consult at any time:
-
-* [the suggested book](http://learnyouahaskell.com/), or any beginners' manual;
-* the generated API documentation;
-* the [ForSyDe-Shallow](https://hackage.haskell.org/package/forsyde-shallow) API documentation;
-* (especially) [Hoogle](https://www.haskell.org/hoogle/). 
 
 Additional material on the core concepts will be given during the lectures. 

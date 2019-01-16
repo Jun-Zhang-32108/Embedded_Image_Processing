@@ -1,5 +1,4 @@
 resolver: lts-13.1
 
 extra-deps:
-- git: git@github.com:forsyde/forsyde-shallow.git
-  commit: a27d1fbb47aa6da89d76d7a85d96d72a25e93218
+- forsyde-shallow-3.4.0.0

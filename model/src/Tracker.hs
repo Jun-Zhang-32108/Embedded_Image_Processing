@@ -1,12 +1,9 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  IL2212.ImageProcessing
--- Copyright   :  (c) George Ungureanu, 2018
--- License     :  BSD-style (see the file LICENSE)
--- 
+-- Module      :  Tracker
+-- Copyright   :  (c) George Ungureanu, 2019
+-- License     :  BSD3
 -- Maintainer  :  ugeorge@kth.se
--- Stability   :  stable
--- Portability :  portable
 --
 -- Contains the image processing functions as well as the DUT process
 -- network instantiation.
@@ -78,8 +75,8 @@ objectPos [cropX,cropY] [offsetX,offsetY]
 -------------------------------------------------------------
 
 -- | SDF process network chaining a series of image processing
--- algorithms upon a stream of pixel values originating from a
--- <https://en.wikipedia.org/wiki/Netpbm_format PPM image>.
+-- algorithms upon a stream of pixel values originating from a set of
+-- <https://en.wikipedia.org/wiki/Netpbm_format PPM images>.
 imageProcessing :: Int
                 -> Int
                 -> Signal Int  -- ^ Input stream of pixel values
@@ -90,7 +87,7 @@ imageProcessing dimX dimY img = detect
     offset   = getOffsetSDF $ xcorr2SDF $ cropSDF coords grayed
     coords   = calcCoordSDF previous grayed
     detect   = calcPosSDF coords offset
-    previous = delaynSDF init_tokens detect
+    previous = delaySDF init_tokens detect
     ----------------------------------------------------------------
     graySDF      = actor11SDF    (x0 * y1) (x1 * y1) grayF
     cropSDF      = actor21SDF (2, x1 * y1) (x2 * y2) cropF

@@ -1,8 +1,8 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Main
--- Copyright   :  (c) George Ungureanu, 2018
--- License     :  BSD-style (see the file LICENSE)
+-- Copyright   :  (c) George Ungureanu, 2019
+-- License     :  BSD3
 -- 
 -- Maintainer  :  ugeorge@kth.se
 -- Stability   :  stable
@@ -26,7 +26,7 @@ import Tracker
 import Utilities
 
 -- | The main function, calling the testbench for the
--- 'ImageProcessing.imageProcessing' process network.
+-- 'Tracker.imageProcessing' process network.
 --
 -- Usage in an interpreter session:
 --
@@ -108,5 +108,5 @@ parse argv
         hPutStrLn stderr (concat errs ++ usageInfo header flags)
         exitWith (ExitFailure 1)
   
-  where header = "Usage: il2212-track PATH [-cioh|--color=VAL]\n\nDetect a specific moving shape in a set of image frames."
+  where header = "Usage: il2212-track [-cioh|--color] PATH\nDetect a specific moving shape in a set of image frames.\n\nPATH is the path to a folder containing PPM images with the same dimensions,\n     sorted in alphabetical order.\nOptions:"
  
