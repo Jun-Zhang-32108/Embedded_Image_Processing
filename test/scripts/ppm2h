@@ -34,4 +34,4 @@ for ppm in $PPMS; do
 done
 
 echo "char sequence_length = $NFILES;" >> $OUTPUT
-echo "unsigned char* image_sequence = {${varlist:2}};" >> $OUTPUT
+echo "unsigned char* image_sequence[$NFILES] = {${varlist:2}};" >> $OUTPUT
