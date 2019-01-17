@@ -77,7 +77,7 @@ echo "" >> log.txt
 make 3>&1 1>>log.txt 2>&1
 
 # Create BSP-package and compiling code for the rest of the processors
-for (( i = 1; i < $NODES; i++ ))  do
+for i in `seq 1 $NODES`; do
     echo "" >> log.txt
     echo "[Compiling code for ${CPU}_$i]" >> log.txt
     echo "" >> log.txt
