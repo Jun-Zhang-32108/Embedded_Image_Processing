@@ -130,13 +130,13 @@ nios2-configure-sof $CORE_DIR/$SOF.sof
 
 # Start Nios II Terminal for each processor
 
-for (( i = 0; i < $NODES; i++ ))  do
+for i in `seq 0 $NODES`; do
     echo ""
     echo "Start NiosII terminal ..."
     xterm -title "$CPU$i" -e "nios2-terminal -i $i" &
 done
 
-for (( i = 0; i < $NODES; i++ ))  do
+for i in `seq 0 $NODES`; do
     echo ""
     echo "***********************************************"
     echo "Download software to board"
