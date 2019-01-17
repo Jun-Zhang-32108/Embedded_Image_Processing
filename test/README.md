@@ -15,7 +15,7 @@ Most scripts are dependent on [ImageMagick](https://www.imagemagick.org/) tools 
 
 	sudo apt install imagemagick
 
-##### `ppm2gif`
+### `ppm2gif`
 
 Converts a set of PPM P3 images found at a given path into a GIF animation.
 
@@ -29,7 +29,7 @@ Example:
 
     ./scripts/ppm2gif test-ppm/
 	
-##### `ppm2h`
+### `ppm2h`
 
 Converts a set of PPM P3 images found at a given path into a C header file, imported by your Nios2 MPSoC projects.
 
@@ -43,7 +43,7 @@ Example:
 
     ./scripts/ppm2h test-ppm/
 	
-##### `execute`
+### `execute`
 
 Executes binaries, grabs the required outputs and builds a GIF animation based on the chosen inputs and resulted outputs. 
 
@@ -67,6 +67,6 @@ Example:
     ./scripts/execute -c=1399aa -a=../app/il2212-single-bare/ -m test-ppm/
 	
 
-##### `compare`
+### `compare`
 
 **not yet available** Compares the generated output of the chosen app against the output of the ForSyDe model.
