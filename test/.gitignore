@@ -1,1 +1,8 @@
-out*
+*
+!README.md
+!scripts
+!scripts/*
+scripts/*~
+scripts/*#
+!test-ppm
+!test-ppm/*
