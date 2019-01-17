@@ -90,7 +90,7 @@ void task1(void* pdata)
 {
 	INT8U err;
 	INT8U value=0;
-	char current_image=0;
+	INT8U current_image=0;
 
 	while (1)
 	{ 
