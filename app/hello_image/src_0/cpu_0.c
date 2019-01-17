@@ -12,6 +12,7 @@
 #include "sys/alt_alarm.h"
 #include "system.h"
 #include "io.h"
+
 #include "images.h"
 
 #define DEBUG 1
@@ -90,30 +91,19 @@ void task1(void* pdata)
 	INT8U err;
 	INT8U value=0;
 	char current_image=0;
-	
-	#if DEBUG == 1
-	/* Sequence of images for testing if the system functions properly */
-	char number_of_images=10;
-	unsigned char* img_array[10] = {img1_24_24, img1_32_22, img1_32_32, img1_40_28, img1_40_40, 
-			img2_24_24, img2_32_22, img2_32_32, img2_40_28, img2_40_40 };
-	#else
-	/* Sequence of images for measuring performance */
-	char number_of_images=3;
-	unsigned char* img_array[3] = {img1_32_32, img2_32_32, img3_32_32};
-	#endif
 
 	while (1)
 	{ 
 		/* Extract the x and y dimensions of the picture */
-		unsigned char i = *img_array[current_image];
-		unsigned char j = *(img_array[current_image]+1);
+		unsigned char i = *image_sequence[current_image];
+		unsigned char j = *(image_sequence[current_image]+1);
 
 		PERF_RESET(PERFORMANCE_COUNTER_0_BASE);
 		PERF_START_MEASURING (PERFORMANCE_COUNTER_0_BASE);
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 		
 		/* Measurement here */
-		sram2sm_p3(img_array[current_image]);
+		sram2sm_p3(image_sequence[current_image]);
 
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);  
 
@@ -131,7 +121,7 @@ void task1(void* pdata)
 		OSSemPend(Task1TmrSem, 0, &err);
 
 		/* Increment the image pointer */
-		current_image=(current_image+1) % number_of_images;
+		current_image=(current_image+1) % sequence_length;
 
 	}
 }
