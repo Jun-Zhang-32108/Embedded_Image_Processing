@@ -59,11 +59,11 @@ calcCoord :: [Int] -> Matrix Double -> [Int]
 calcCoord [prevX,prevY] img = [cropX,cropY]
   where
     cropX | prevX <= dSPAN     = 0
-          | prevX > imgW-dSPAN = imgW - cropSIZE
-          | otherwise          = prevX - dSPAN
+          | prevX > imgW-dSPAN = imgW - cropSIZE - 1
+          | otherwise          = prevX - dSPAN - 1
     cropY | prevY <= dSPAN     = 0
-          | prevY > imgH-dSPAN = imgH - cropSIZE
-          | otherwise          = prevY - dSPAN
+          | prevY > imgH-dSPAN = imgH - cropSIZE - 1
+          | otherwise          = prevY - dSPAN - 1
     (imgW,imgH) = sizeMat img
 
 objectPos :: [Int] -> [Int] -> [Int]

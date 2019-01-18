@@ -19,6 +19,8 @@ module Utilities (
   ) where
 
 import Data.List (intercalate, isPrefixOf)
+import Data.Maybe (isNothing)
+import Text.Read
 import ForSyDe.Shallow.Core.Vector
 import ForSyDe.Shallow.Utility.Matrix
 
@@ -30,11 +32,11 @@ readPPM :: String            -- ^ file content
         -> (Int, Int, [Int]) -- ^ (X dimension, Y dimension, list of pixel values)
 readPPM str = (dimX, dimY, image)
   where
-    imageData = map read $ tail $ dropWhile (isPrefixOf "#") $ words str :: [Int]
+    imageData = map read $ dropWhile (\a -> isNothing (readMaybe a :: Maybe Int)) $ words str :: [Int]
     -- imageData = map (fst . fromJust . C8.readInt) $ tail $ C8.words str :: [Int]
     (dimX, dimY, _, image)  = getHeader imageData
     getHeader (x:y:max:img) = (x, y, max, img)
-
+    
 -- | IO function which takes a list of paths to P3 PPM images, reads
 -- the files with 'readPPM', checks if all images have the same
 -- dimensions, concatenates all images and returns the obtained list

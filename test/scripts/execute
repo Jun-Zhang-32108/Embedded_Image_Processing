@@ -42,12 +42,14 @@ fi
 INPUT=$1
 NAME=$(echo $(basename $INPUT) | sed 's|-|_|g')
 
+echo $HIDE_COLOR
+
 if [[ -n $EXEC_MODEL ]]; then
     echo "Executing model..."
     OUTPUT="${PPM_OUTPUT}-model"
     rm -rf $OUTPUT
     mkdir -p $OUTPUT
-    for f in $(ls $INPUT/*.ppm); do cp -- "$f" "$OUTPUT/0000$(basename $f)"; done
+    for f in $(ls $INPUT/*.ppm); do cp -- "$f" "$OUTPUT/00$(basename $f)"; done
     il2212-track $INPUT | xargs python $CURRDIR/hide.py -i $INPUT -o $OUTPUT -c $HIDE_COLOR
     bash $CURRDIR/ppm2gif $OUTPUT
 fi
