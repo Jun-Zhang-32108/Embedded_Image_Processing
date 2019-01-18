@@ -19,7 +19,7 @@ SRC_PATH=./src
 
 APP=hello_mpsoc        # same name as the folder
 CPU=cpu
-NODES=5
+NODES=4
 
 # checking if the core or the run script has been modified, to avoid
 # unnecessary recompilation of the BSP.
@@ -31,7 +31,7 @@ if [[ `md5sum $SOPC_BASE.*` == `cat $CORE_DIR/.update.md5` ]] && \
 else
     echo "Will build the BSP files."
     REMAKE_BSP=true
-    md5sum $CORE_DIR/$SOPCINFO.* > $CORE_DIR/.update.md5
+    md5sum $md5sum $SOPC_BASE.* > $CORE_DIR/.update.md5
     md5sum $(basename $0) > .run.md5
 fi
 
@@ -64,13 +64,13 @@ cd ../../app/$APP
 
 # Create Application
 nios2-app-generate-makefile \
-    --bsp-dir $BSP_DIR/${BSP}_0 \
+    --bsp-dir ${BSP_PATH}_0 \
     --elf-name ${APP}_0.elf \
     --src-dir ${SRC_PATH}_0/ \
     --set APP_CFLAGS_OPTIMIZATION -Os
 
 echo "" > log.txt
-echo "[Compiling code for ${CPU}0]" > log.txt
+echo "[Compiling code for ${CPU}_0]" > log.txt
 echo "" >> log.txt
 
 # Create ELF-file
@@ -126,14 +126,14 @@ echo "Download hardware to board"
 echo "***********************************************"
 echo ""
 
-nios2-configure-sof $CORE_DIR/$SOF.sof
+nios2-configure-sof $SOF_FILE
 
 # Start Nios II Terminal for each processor
 
 for i in `seq 0 $NODES`; do
     echo ""
     echo "Start NiosII terminal ..."
-    xterm -title "$CPU$i" -e "nios2-terminal -i $i" &
+    xterm -title "${CPU}_$i" -e "nios2-terminal -i $i" &
 done
 
 for i in `seq 0 $NODES`; do

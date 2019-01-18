@@ -31,7 +31,7 @@ if [[ `md5sum $SOPC_BASE.*` == `cat $CORE_DIR/.update.md5` ]] && \
 else
     echo "Will build the BSP files."
     REMAKE_BSP=true
-    md5sum $CORE_DIR/$SOPCINFO.* > $CORE_DIR/.update.md5
+    md5sum $md5sum $SOPC_BASE.* > $CORE_DIR/.update.md5
     md5sum $(basename $0) > .run.md5
 fi
 
