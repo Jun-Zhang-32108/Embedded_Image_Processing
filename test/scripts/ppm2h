@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 INPUT="$@"
 OUTPUT="images.h"
