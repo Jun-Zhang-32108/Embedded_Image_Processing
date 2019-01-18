@@ -1,10 +1,8 @@
-cabal-version: 1.12
-
--- This file has been generated from package.yaml by hpack version 0.31.1.
+-- This file has been generated from package.yaml by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f5cfdf1d0050db92cfa3b93d7d31e5db39b3dfb0b62e5ae66eb03cc3e8deec12
+-- hash: 1ab73e7d7eccaff40fa0b86205fa2437c7be46894aecb3daf2473c082fe4963a
 
 name:           il2212
 version:        0.2.0.0
@@ -15,9 +13,10 @@ maintainer:     ugeorge@kth.se
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
+cabal-version:  >= 1.10
 extra-source-files:
-    README.md
     ChangeLog.md
+    README.md
 
 library
   exposed-modules:

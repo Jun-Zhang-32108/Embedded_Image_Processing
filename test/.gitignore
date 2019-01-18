@@ -6,3 +6,8 @@ scripts/*~
 scripts/*#
 !test-ppm
 !test-ppm/*
+!game
+!game/*
+!pong
+!pong/*
+*~

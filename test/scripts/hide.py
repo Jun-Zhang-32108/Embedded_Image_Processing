@@ -27,13 +27,16 @@ for line in args.coordinates:
         spots.append((a,b))
 for (idx, ppm) in enumerate(sorted(ppms)):
     with open(os.path.join(args.input_folder, ppm), 'r') as ppmf:
-        values = ppmf.read().split()
+        values = ppmf.read().splitlines()
+        if values[1].startswith('#'):
+            values=values[0:1] + values[2:]
+        values = ' '.join(values).split()
         kind = values[0]
         values = map(int, values[1:])
         w, h, maxval = values[0:3]
         values = values[3:]
-        for x in range(spots[idx][0]-4, spots[idx][0]+5):
-            for y in range(spots[idx][1]-4, spots[idx][1]+5):
+        for x in range(spots[idx][0]-3, spots[idx][0]+4):
+            for y in range(spots[idx][1]-3, spots[idx][1]+4):
                 values[3*x + 3*w*y + 0] = hideR
                 values[3*x + 3*w*y + 1] = hideG
                 values[3*x + 3*w*y + 2] = hideB
