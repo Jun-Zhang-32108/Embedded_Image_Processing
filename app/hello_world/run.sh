@@ -66,7 +66,7 @@ fi
 nios2-app-generate-makefile \
     --bsp-dir $BSP_PATH \
     --elf-name $APP_NAME.elf \
-    --src-dir /$SRC_PATH \
+    --src-dir $SRC_PATH \
     --set APP_CFLAGS_OPTIMIZATION -Os
 
 echo "" > log.txt

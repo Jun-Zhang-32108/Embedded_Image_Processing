@@ -17,7 +17,7 @@ char asciiChars[] = {' ','.',':','-','=','+','/','t','z','U','w','*','0','#','%'
  * @param x_dim image X dimention
  * @param y_dim image Y dimention
  */
-void printAscii(unsigned int* image, int x_dim, int y_dim) {
+void printAscii(unsigned char* image, int x_dim, int y_dim) {
   int k = 0;
   int l = 0;
   for(k = 0; k < y_dim; k++) {
@@ -43,7 +43,7 @@ void printAscii(unsigned int* image, int x_dim, int y_dim) {
  * @param size radius of hidden patch
  * @param gray_value gray value of the hiding patch
  */
-void printAsciiHidden(unsigned int* image, int x_dim, int y_dim,
+void printAsciiHidden(unsigned char* image, int x_dim, int y_dim,
 		      int x_pos, int y_pos,
 		      int size, unsigned int gray_value) {
   int k = 0;
