@@ -1,5 +1,10 @@
 *.run.md5
 *log.*
+Makefile
+*.elf
+*.map
+*.objdump
 *.update.md5
+*.project
 *~
 *.metadata
