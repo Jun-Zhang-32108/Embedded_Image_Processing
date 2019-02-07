@@ -1,11 +1,15 @@
 /* Date: 2019-2-5
  * Author: Jun Zhang, Jaakko Laiho
+ * Email£º zhangjun32108@outlook.com 
  * Description: An image processing program that captures the required pattern in each frame of the input flow
  */
 
 /*
-To do list 1: Free the all the dynamic 2D array
-To do list 2: Test  the functions after Func crop
+ * Things have done: Finshi writing and testing the self-defined function
+ * 
+ * 
+ * To do list 1: Finish writing the main function
+ * To do list 2: Free the all the dynamic 2D array in main function
  */
 
 #include <stdio.h>
@@ -30,7 +34,9 @@ INT8U xPATTERN[5][5] = {{0,0,1,0,0},
 					  {0,0,1,0,0}};					  
 INT8U xPATTERN_length = 5;
 INT8U offset_size_length = 27; // offset_size_length = cropSIZE - 4
-/*INT8U test[] = { 36, 36, 255
+
+// Testing input image (represented by 2-D array) 
+INT8U test[] = { 36, 36, 255
 				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255
 				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255
 				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255
@@ -67,12 +73,44 @@ INT8U offset_size_length = 27; // offset_size_length = cropSIZE - 4
 				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255
 				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255
 				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255
-};*/ 
+};
+
 INT8U INT8U_poINT8Uer_size = sizeof(INT8U*);
 INT8U INT8U_size = sizeof(INT8U);
 
+// Smaller-sized test data
+INT8U test_1[] = { 3, 3, 255
+				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255};
 
+//Print the 2-D matrix with INT8U datatype
 void printMatrix(INT8U **inputMatrix, INT8U matrix_h, INT8U matrix_w)
+{
+	INT8U i;
+	INT8U j;
+	printf("============================================================\n");
+	printf("============================================================\n");
+	printf("\n");
+	printf("[");
+	for(i = 0; i < matrix_h; i++)
+	{
+		printf("[	");
+		for(j = 0; j < matrix_w; j++)
+		{
+			//printf("(%d, %d)  %d	",i,j,*(*inputMatrix+matrix_w*i+j));
+			//printf("(%d, %d)  %d	",i,j,inputMatrix[i][j]);
+			printf("  %d	",inputMatrix[i][j]);
+		}
+		printf("]");
+		printf("\n");
+	}
+	printf("]");
+	printf("============================================================\n");
+	printf("============================================================\n");
+	printf("\n");
+}
+
+//Print the 2-D matrix with INT16U datatype
+void printMatrix_INT16U(INT16U **inputMatrix, INT8U matrix_h, INT8U matrix_w)
 {
 	INT8U i;
 	INT8U j;
@@ -167,6 +205,7 @@ INT8U ** groupV_3(INT8U **inputMatrix, INT8U matrix_row, INT8U matrix_col)
 	return group;
 }
 
+// Cropped the image into a smaller piece with the size of  cropSIZE*cropSIZE
 INT8U** crop(INT8U startingPoINT8U_x, INT8U startingPoINT8U_y, INT8U** inputMatrix, INT8U img_w)
 {
 	INT8U i;
@@ -199,30 +238,41 @@ INT8U** crop(INT8U startingPoINT8U_x, INT8U startingPoINT8U_y, INT8U** inputMatr
 }
 
 //Optimization poINT8Uï¼š store the INT8Uermediate value to speed up the program
-INT16U** xcorr2(INT8U** inputMatrix, INT8U** xPATTERN)
+INT16U ** xcorr2(INT8U **inputMatrix, INT8U xPATTERN[5][5], INT8U inputMatrix_w)
 {
-	INT8U i = 0;
-	INT8U j = 0;
-	INT8U m = 0;
-	INT8U n = 0;
+	INT8U i;
+	INT8U j;
+	INT8U m;
+	INT8U n;
 	INT8U product = 0;
 	INT8U sum;
 	INT8U output_size_length = offset_size_length;
-	INT8U* startingPoINT8UAddress;
-	INT16U** group = (INT8U**)calloc(output_size_length, sizeof(INT8U*));
-	for (; i < output_size_length; i++)
+	INT8U *startingPoINT8UAddress;
+	INT16U **group = (INT16U**)calloc(output_size_length, sizeof(INT16U*));
+    if(group == NULL)
+    {
+    	printf("Calloc Error!\n");
+    	exit;
+    }
+	group[0] = (INT16U*)calloc(output_size_length*output_size_length, sizeof(INT16U));
+    if(group[0] == NULL)
+    {
+    	printf("Calloc Error!\n");
+    	exit;
+    }
+	for ( i = 0; i < output_size_length; i++)
 	{
-		group[i] = (INT8U*)calloc(output_size_length, sizeof(INT8U));
-		for(; j < output_size_length; j++)
+		group[i] = group[0] + i*output_size_length;
+		for( j = 0; j < output_size_length; j++)
 		{
 			sum = 0;
-			startingPoINT8UAddress = *inputMatrix + output_size_length*i + j;
-			for( m; m < xPATTERN_length; m++)
+			startingPoINT8UAddress = *inputMatrix + inputMatrix_w*i + j;
+			for( m = 0; m < xPATTERN_length; m++)
 			{
-				for( n; n < xPATTERN_length; n++)
+				for( n = 0; n < xPATTERN_length; n++)
 				{
-					if((*((INT8U *)xPATTERN+xPATTERN_length*m+n))>0)
-						product = *(startingPoINT8UAddress + m*xPATTERN_length + n);
+					if(xPATTERN[m][n]>0)
+						product = *(startingPoINT8UAddress + inputMatrix_w*m + n);
 					else
 						product = 0;
 					sum = sum + product;
@@ -231,30 +281,42 @@ INT16U** xcorr2(INT8U** inputMatrix, INT8U** xPATTERN)
 			group[i][j] = sum; 			
 		}		
 	}
+	printf("Xcropp2ed Matrix\n");
+	printMatrix_INT16U(group, output_size_length,output_size_length);
 	return group;
 }
 
-INT8U* posMax(INT8U** inputMatrix)
+// The inputMatrix here is the xcorred Matrix
+INT8U * posMax(INT16U** inputMatrix)
 {
 	INT8U* output = (INT8U*)calloc(3, sizeof(INT8U));
-	INT8U i = 0;
-	INT8U j = 0;
+	INT8U i;
+	INT8U j;
 	INT8U max = 0;
-	for(; i<offset_size_length; i++)
-		for(; j <offset_size_length; j++)
+	for(i = 0; i<offset_size_length; i++)
+		for(j = 0; j <offset_size_length; j++)
 		{
 			if(max < *(*inputMatrix+offset_size_length*i+j))
+			{
 				max = *(*inputMatrix+offset_size_length*i+j);
 				output[0] = i;
 				output[1] = j;
 				output[2] = max;
+			}
 		}
+	printf("Position: %d, %d, %d\n",output[0],output[1], output[2]);
 	return output; 
 }
 
-INT8U* calcCoord(INT8U img_w, INT8U img_h, INT8U previousPoINT8U[2])
+//Calculate the next cropped point according to the previous detected pattern position ( the middle point of the detected pattern)
+INT8U *calcCoord(INT8U *previousPoINT8U, INT8U img_h, INT8U img_w )
 {
-	INT8U* output = (INT8U*)calloc(2, sizeof(INT8U));
+	INT8U *output = (INT8U*)calloc(2, INT8U_size);
+	if(output == NULL)
+	{
+		printf("Calloc Error!\n");
+		exit;
+	}
 	if(previousPoINT8U[0] <= dSPAN)
 		output[0] = 0;
 	else if (previousPoINT8U[0] > (img_w - dSPAN))
@@ -267,14 +329,22 @@ INT8U* calcCoord(INT8U img_w, INT8U img_h, INT8U previousPoINT8U[2])
 		output[1] = img_h - cropSIZE -1;
 	else
 		output[1] = previousPoINT8U[1] - dSPAN - 1;
+	printf("Next cropped point: %d, %d . \n",output[0],output[1]);
 	return output;
 }
 
-INT8U* objectPos(INT8U cropPoINT8U[2], INT8U offset[2])
+//croPoINT8U represents the position of cropped point
+INT8U * objectPos(INT8U cropPoINT8U[2], INT8U *offset)
 {
-	INT8U* output = (INT8U*)calloc(2, sizeof(INT8U));
-	output[0] = cropPoINT8U[0] + offset[0];
-	output[1] = cropPoINT8U[1] + offset[1];
+	INT8U* output = (INT8U*)calloc(2, INT8U_size);
+	if(output == NULL)
+	{
+		printf("Calloc Error!\n");
+		exit;
+	}
+	output[0] = cropPoINT8U[0] + offset[0] + 2;
+	output[1] = cropPoINT8U[1] + offset[1] + 2;
+	printf("Object Position: %d, %d\n",output[0],output[1]);
 	return output;
 }
 
@@ -285,7 +355,8 @@ INT8U main()
 	//Second value of the list is the value of the real value of image weight
 	//Third value of the list is the value of maximum color
 	//Later is the R, G, B values of each pixel point, respectively, all the RGB values are oganized in an consecutive order accroding to C language convention
-	INT8U *test = test_ppm_1;
+	//INT8U *test = test_ppm_1;
+//	INT8U *test = test_1;
 	INT8U img_h = test[0];
 	INT8U img_w = test[1];
 	//Extended by the RGB value
@@ -299,6 +370,12 @@ INT8U main()
     INT8U **grayed = groupV_3(Matrix_, img_h, img_w);
     printf("grayed[1][2]] Address: %d \n", &grayed[1][2]);
     INT8U **croped = crop(1,2,grayed, img_w);
+    
+    INT8U cropped_point[2] = {1,2};
+    INT16U **xcropp2ed = xcorr2(croped, xPATTERN, cropSIZE);
+    INT8U *position_Max = posMax(xcropp2ed);
+    INT8U *previous_point = objectPos(cropped_point,position_Max);
+    INT8U *next_cropped = calcCoord(previous_point, img_h, img_w );
     
 	return 0;
 }
