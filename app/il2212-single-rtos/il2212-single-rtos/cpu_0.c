@@ -13,26 +13,75 @@
 #include "system.h"
 #include "io.h"
 
+#include "ascii_gray.h"
 #include "images.h"
+//#include "image_processing_functions.h"
 
 #define DEBUG 1
 
 #define HW_TIMER_PERIOD 100 /* 100ms */
 
+
 /* Definition of Task Stacks */
 #define   TASK_STACKSIZE       2048
 OS_STK    task1_stk[TASK_STACKSIZE];
 OS_STK    StartTask_Stack[TASK_STACKSIZE]; 
+OS_STK    taskGRAYSDF_stk[TASK_STACKSIZE];
+OS_STK    taskCROPSDF_stk[TASK_STACKSIZE];
+OS_STK    taskXCORR2SDF_stk[TASK_STACKSIZE];
+OS_STK    taskGETOFFSETSDF_stk[TASK_STACKSIZE];
+OS_STK    taskCALCPOSSDF_stk[TASK_STACKSIZE];
+OS_STK    taskDELAYSDF_stk[TASK_STACKSIZE];
+OS_STK    taskCALCCOORDSDF_stk[TASK_STACKSIZE];
 
 /* Definition of Task Priorities */
 
-#define STARTTASK_PRIO      1
-#define TASK1_PRIORITY      10
+#define STARTTASK_PRIO      		1
+#define TASK1_PRIORITY      		10
+#define TASKGRAYSDF_PRIORITY      	11
+#define TASKCROPSDF_PRIORITY      	12
+#define TASKXCORR2SDF_PRIORITY      13
+#define TASKGETOFFSETSDF_PRIORITY   14
+#define TASKCALCPOSSDF_PRIORITY     15
+#define TASKDELAYSDF_PRIORITY      	16
+#define TASKCALCCOORDSDF_PRIORITY   17
 
 /* Definition of Task Periods (ms) */
-#define TASK1_PERIOD 10000
+#define TASK1_PERIOD 			10000
+#define TASKGRAYSDF_PERIOD 		100
+#define TASKCROPSDF_PERIOD 		100
+#define TASKXCORR2SDF_PERIOD 	100
+#define TASKGETOFFSETSDF_PERIOD 100
+#define TASKCALCPOSSDF_PERIOD 	100
+#define TASKDELAYSDF_PERIOD 	100
+#define TASKCALCCOORDSDF_PERIOD 100
+
 
 #define SECTION_1 1
+
+
+
+
+/* Signals - Message queues */
+OS_EVENT *TaskGRAYSDFSem;
+OS_EVENT *TaskCROPSDFSem;
+OS_EVENT *TaskXCORR2SDFSem;
+OS_EVENT *TaskGETOFFSETSDFSem;
+OS_EVENT *TaskCALCPOSSDFSem;
+OS_EVENT *TaskDELAYSDFSem;
+OS_EVENT *TaskCALCCOORDSDFSem;
+//OS_EVENT *QGRAY2CROP;
+//OS_EVENT *QCALCCOORD2CROP;
+//OS_EVENT *QGRAY2CALCCOORD;
+//
+//OS_EVENT *QCROP2XCORR2;
+//OS_EVENT *QXCORR22GETOFFSET;
+//OS_EVENT *QGETOFFSET2CALCPOS;
+//
+//OS_EVENT *QCALCPOS2DELAY;
+//OS_EVENT *QDELAY2CALCCOORD;
+//OS_EVENT *QCALCCOORD2CALCPOS;
+
 
 /*
  * Example function for copying a p3 image from sram to the shared on-chip mempry
@@ -123,8 +172,105 @@ void task1(void* pdata)
 		/* Increment the image pointer */
 		current_image=(current_image+1) % sequence_length;
 
+		OSSemPost(TaskGRAYSDFSem);
 	}
 }
+
+
+
+void taskGRAYSDF(void* pdata)
+{
+	INT8U err;
+
+	while (1)
+	{
+		OSSemPend(TaskGRAYSDFSem, 0, &err);
+		printf("Task GRAYSDF\n");
+		OSSemPost(TaskCROPSDFSem);
+		OSSemPost(TaskCALCCOORDSDFSem);
+	}
+}
+
+void taskCROPSDF(void* pdata)
+{
+	INT8U err;
+
+	while (1)
+	{
+		OSSemPend(TaskCROPSDFSem, 0, &err);
+		OSSemPend(TaskCROPSDFSem, 0, &err);
+		printf("Task CROPSDF\n");
+		OSSemPost(TaskXCORR2SDFSem);
+
+	}
+}
+
+void taskXCORR2SDF(void* pdata)
+{
+	INT8U err;
+
+	while (1)
+	{
+		OSSemPend(TaskXCORR2SDFSem, 0, &err);
+		printf("Task XCORR2SDF\n");
+		OSSemPost(TaskGETOFFSETSDFSem);
+	}
+}
+
+void taskGETOFFSETSDF(void* pdata)
+{
+	INT8U err;
+
+	while (1)
+	{
+		OSSemPend(TaskGETOFFSETSDFSem, 0, &err);
+		printf("Task GETOFFSETSDF\n");
+		OSSemPost(TaskCALCPOSSDFSem);
+	}
+}
+
+void taskCALCPOSSDF(void* pdata)
+{
+	INT8U err;
+
+	while (1)
+	{
+		OSSemPend(TaskCALCPOSSDFSem, 0, &err);
+		OSSemPend(TaskCALCPOSSDFSem, 0, &err);
+		printf("Task CALCPOSSDF\n");
+		OSSemPost(TaskDELAYSDFSem);
+	}
+}
+
+void taskDELAYSDF(void* pdata)
+{
+	INT8U err;
+
+	while (1)
+	{
+		OSSemPend(TaskDELAYSDFSem, 0, &err);
+		printf("Task DELAYSDF\n");
+		OSSemPost(TaskCALCCOORDSDFSem);
+
+	}
+}
+
+void taskCALCCOORDSDF(void* pdata)
+{
+	INT8U err;
+
+	while (1)
+	{
+		OSSemPend(TaskCALCCOORDSDFSem, 0, &err);
+		OSSemPend(TaskCALCCOORDSDFSem, 0, &err);
+		printf("Task CALCCOORDSDF\n");
+		OSSemPost(TaskCROPSDFSem);
+		OSSemPost(TaskCALCPOSSDFSem);
+	}
+}
+
+
+
 
 void StartTask(void* pdata)
 {
@@ -132,13 +278,13 @@ void StartTask(void* pdata)
   void* context;
 
   static alt_alarm alarm;     /* Is needed for timer ISR function */
-  
+
   /* Base resolution for SW timer : HW_TIMER_PERIOD ms */
-  delay = alt_ticks_per_second() * HW_TIMER_PERIOD / 1000; 
+  delay = alt_ticks_per_second() * HW_TIMER_PERIOD / 1000;
   printf("delay in ticks %d\n", delay);
 
-  /* 
-   * Create Hardware Timer with a period of 'delay' 
+  /*
+   * Create Hardware Timer with a period of 'delay'
    */
   if (alt_alarm_start (&alarm,
       delay,
@@ -148,8 +294,8 @@ void StartTask(void* pdata)
           printf("No system clock available!n");
       }
 
-  /* 
-   * Create and start Software Timer 
+  /*
+   * Create and start Software Timer
    */
 
    //Create Task1 Timer
@@ -160,21 +306,21 @@ void StartTask(void* pdata)
                             (void *)0,
                             "Task1Tmr",
                             &err);
-                            
+
    if (DEBUG) {
     if (err == OS_ERR_NONE) { //if creation successful
       printf("Task1Tmr created\n");
     }
    }
-   
+
 
    /*
     * Start timers
     */
-   
+
    //start Task1 Timer
    OSTmrStart(Task1Tmr, &err);
-   
+
    if (DEBUG) {
     if (err == OS_ERR_NONE) { //if start successful
       printf("Task1Tmr started\n");
@@ -182,11 +328,30 @@ void StartTask(void* pdata)
    }
 
 
+
    /*
    * Creation of Kernel Objects
    */
 
-  Task1TmrSem = OSSemCreate(0);   
+  Task1TmrSem 			= OSSemCreate(0);
+  TaskGRAYSDFSem 		= OSSemCreate(0);
+  TaskCROPSDFSem 		= OSSemCreate(0);
+  TaskXCORR2SDFSem 		= OSSemCreate(0);
+  TaskGETOFFSETSDFSem 	= OSSemCreate(0);
+  TaskCALCPOSSDFSem 	= OSSemCreate(0);
+  TaskDELAYSDFSem 		= OSSemCreate(1);
+  TaskCALCCOORDSDFSem 	= OSSemCreate(0);
+
+//  QGRAY2CROP 		= OSQCreate;
+//  QCALCCOORD2CROP;
+//  QGRAY2CALCCOORD;
+//  QCROP2XCORR2;
+//  QXCORR22GETOFFSET;
+//  QGETOFFSET2CALCPOS;
+//  QCALCPOS2DELAY;
+//  QDELAY2CALCCOORD;
+//  QCALCCOORD2CALCPOS;
+
 
   /*
    * Create statistics task
@@ -194,8 +359,8 @@ void StartTask(void* pdata)
 
   OSStatInit();
 
-  /* 
-   * Creating Tasks in the system 
+  /*
+   * Creating Tasks in the system
    */
 
   err=OSTaskCreateExt(task1,
@@ -212,7 +377,119 @@ void StartTask(void* pdata)
      if (err == OS_ERR_NONE) { //if start successful
       printf("Task1 created\n");
     }
-   }  
+   }
+
+  err=OSTaskCreateExt(taskGRAYSDF,
+                  NULL,
+                  (void *)&taskGRAYSDF_stk[TASK_STACKSIZE-1],
+                  TASKGRAYSDF_PRIORITY,
+                  TASKGRAYSDF_PRIORITY,
+                  taskGRAYSDF_stk,
+                  TASK_STACKSIZE,
+                  NULL,
+                  0);
+
+  if (DEBUG) {
+     if (err == OS_ERR_NONE) { //if start successful
+      printf("TaskGRAYSDF created\n");
+    }
+   }
+
+  err=OSTaskCreateExt(taskCROPSDF,
+                  NULL,
+                  (void *)&taskCROPSDF_stk[TASK_STACKSIZE-1],
+                  TASKCROPSDF_PRIORITY,
+                  TASKCROPSDF_PRIORITY,
+                  taskCROPSDF_stk,
+                  TASK_STACKSIZE,
+                  NULL,
+                  0);
+
+  if (DEBUG) {
+     if (err == OS_ERR_NONE) { //if start successful
+      printf("TaskCROPSDF created\n");
+    }
+   }
+
+  err=OSTaskCreateExt(taskXCORR2SDF,
+                  NULL,
+                  (void *)&taskXCORR2SDF_stk[TASK_STACKSIZE-1],
+                  TASKXCORR2SDF_PRIORITY,
+                  TASKXCORR2SDF_PRIORITY,
+                  taskXCORR2SDF_stk,
+                  TASK_STACKSIZE,
+                  NULL,
+                  0);
+
+  if (DEBUG) {
+     if (err == OS_ERR_NONE) { //if start successful
+      printf("TaskXCORR2SDF created\n");
+    }
+   }
+
+  err=OSTaskCreateExt(taskGETOFFSETSDF,
+                  NULL,
+                  (void *)&taskGETOFFSETSDF_stk[TASK_STACKSIZE-1],
+                  TASKGETOFFSETSDF_PRIORITY,
+                  TASKGETOFFSETSDF_PRIORITY,
+                  taskGETOFFSETSDF_stk,
+                  TASK_STACKSIZE,
+                  NULL,
+                  0);
+
+  if (DEBUG) {
+     if (err == OS_ERR_NONE) { //if start successful
+      printf("TaskGETOFFSETSDF created\n");
+    }
+   }
+
+  err=OSTaskCreateExt(taskCALCPOSSDF,
+                  NULL,
+                  (void *)&taskCALCPOSSDF_stk[TASK_STACKSIZE-1],
+                  TASKCALCPOSSDF_PRIORITY,
+                  TASKCALCPOSSDF_PRIORITY,
+                  taskCALCPOSSDF_stk,
+                  TASK_STACKSIZE,
+                  NULL,
+                  0);
+
+  if (DEBUG) {
+     if (err == OS_ERR_NONE) { //if start successful
+      printf("TaskCALCPOSSDF created\n");
+    }
+   }
+
+  err=OSTaskCreateExt(taskDELAYSDF,
+                  NULL,
+                  (void *)&taskDELAYSDF_stk[TASK_STACKSIZE-1],
+                  TASKDELAYSDF_PRIORITY,
+                  TASKDELAYSDF_PRIORITY,
+                  taskDELAYSDF_stk,
+                  TASK_STACKSIZE,
+                  NULL,
+                  0);
+
+  if (DEBUG) {
+     if (err == OS_ERR_NONE) { //if start successful
+      printf("TaskDELAYSDF created\n");
+    }
+   }
+
+  err=OSTaskCreateExt(taskCALCCOORDSDF,
+                  NULL,
+                  (void *)&taskCALCCOORDSDF_stk[TASK_STACKSIZE-1],
+                  TASKCALCCOORDSDF_PRIORITY,
+                  TASKCALCCOORDSDF_PRIORITY,
+                  taskCALCCOORDSDF_stk,
+                  TASK_STACKSIZE,
+                  NULL,
+                  0);
+
+  if (DEBUG) {
+     if (err == OS_ERR_NONE) { //if start successful
+      printf("TaskCALCCOORDSDF created\n");
+    }
+   }
 
   printf("All Tasks and Kernel Objects generated!\n");
 
@@ -225,21 +502,27 @@ void StartTask(void* pdata)
 int main(void) {
 
   printf("MicroC/OS-II-Vesion: %1.2f\n", (double) OSVersion()/100.0);
-     
+
   OSTaskCreateExt(
 	 StartTask, // Pointer to task code
          NULL,      // Pointer to argument that is
                     // passed to task
          (void *)&StartTask_Stack[TASK_STACKSIZE-1], // Pointer to top
-						     // of task stack 
+						     // of task stack
          STARTTASK_PRIO,
          STARTTASK_PRIO,
          (void *)&StartTask_Stack[0],
          TASK_STACKSIZE,
-         (void *) 0,  
+         (void *) 0,
          OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR);
-         
+
   OSStart();
-  
+
   return 0;
 }
+
+
+
+
+
+
