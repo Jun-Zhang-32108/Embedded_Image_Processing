@@ -16,20 +16,21 @@ To do list 2: Test  the functions after Func crop
 #include "images.h"
 
 
-//Just for testing. Int Nios2 two, we have INT16U. But to test the program in a normal compilor, we need to define a 
-//new datatype or rename the int to INT16U. We cam simply comment this line when testing in the board.
-typedef int INT16U;
+//Define two new datatypes to save memory. Since the maximum grayscale value is 255, INT8U (8 bits) should be big enough to hold most variables.
+//Only when we call xcorr2 functions the dot product value is possible to be greater than 255. So we use INT16U to hold that value.  
+typedef unsigned char INT8U;
+typedef unsigned short INT16U;
 
-INT16U dSPAN = 15;
-INT16U cropSIZE = 31; //cropSIZE = 2 * dsPAN + 1;
-INT16U xPATTERN[5][5] = {{0,0,1,0,0},
+INT8U dSPAN = 15;
+INT8U cropSIZE = 31; //cropSIZE = 2 * dsPAN + 1;
+INT8U xPATTERN[5][5] = {{0,0,1,0,0},
 					  {0,1,0,1,0},
 					  {1,0,0,0,1},
 					  {0,1,0,1,0},
 					  {0,0,1,0,0}};					  
-INT16U xPATTERN_length = 5;
-INT16U offset_size_length = 27; // offset_size_length = cropSIZE - 4
-INT16U test[] = { 36, 36, 255
+INT8U xPATTERN_length = 5;
+INT8U offset_size_length = 27; // offset_size_length = cropSIZE - 4
+/*INT8U test[] = { 36, 36, 255
 				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255
 				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255
 				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255
@@ -66,15 +67,15 @@ INT16U test[] = { 36, 36, 255
 				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255
 				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255
 				, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255, 1,2,3,4,5,6,7,8,9, 11,12,13,14,15,16,17,18,19, 21,22,23,24,25,26,255,255,255
-};
-INT16U INT16U_poINT16Uer_size = sizeof(INT16U*);
-INT16U INT16U_size = sizeof(INT16U);
+};*/ 
+INT8U INT8U_poINT8Uer_size = sizeof(INT8U*);
+INT8U INT8U_size = sizeof(INT8U);
 
 
-void printMatrix(INT16U **inputMatrix, INT16U matrix_h, INT16U matrix_w)
+void printMatrix(INT8U **inputMatrix, INT8U matrix_h, INT8U matrix_w)
 {
-	INT16U i;
-	INT16U j;
+	INT8U i;
+	INT8U j;
 	printf("============================================================\n");
 	printf("============================================================\n");
 	printf("\n");
@@ -98,17 +99,17 @@ void printMatrix(INT16U **inputMatrix, INT16U matrix_h, INT16U matrix_w)
 }
 
 // transform the input input list to a 2D-matrix with the size of img_h * (img_w * 3)
-INT16U ** matrix(INT16U *source, INT16U matrix_h, INT16U matrix_w)
+INT8U ** matrix(INT8U *source, INT8U matrix_h, INT8U matrix_w)
 {
-	INT16U i;
-	INT16U j;
-    INT16U **group = (INT16U **) calloc(matrix_h, INT16U_poINT16Uer_size);
+	INT8U i;
+	INT8U j;
+    INT8U **group = (INT8U **) calloc(matrix_h, INT8U_poINT8Uer_size);
     if(group == NULL)
     {
     	printf("Calloc Error!\n");
     	exit;
     }
-    group[0] = (INT16U*)calloc(matrix_h*matrix_w, INT16U_size);
+    group[0] = (INT8U*)calloc(matrix_h*matrix_w, INT8U_size);
     if(group[0] == NULL)
     {
     	printf("Calloc Error!\n");
@@ -133,17 +134,17 @@ INT16U ** matrix(INT16U *source, INT16U matrix_h, INT16U matrix_w)
 // transform RGB value to grayscale value
 // Input: a 2D-matrix with the size of img_h * (img_w * 3), img_h, img_w
 // Output: a 2D-matrix with the size of img_h * img_w
-INT16U ** groupV_3(INT16U **inputMatrix, INT16U matrix_row, INT16U matrix_col)
+INT8U ** groupV_3(INT8U **inputMatrix, INT8U matrix_row, INT8U matrix_col)
 {
-	INT16U i;
-	INT16U j;
-	INT16U **group = (INT16U**)calloc(matrix_row, INT16U_poINT16Uer_size);
+	INT8U i;
+	INT8U j;
+	INT8U **group = (INT8U**)calloc(matrix_row, INT8U_poINT8Uer_size);
     if(group == NULL)
     {
     	printf("Calloc Error!\n");
     	exit;
     }
-    group[0] = (INT16U*)calloc(matrix_col*matrix_row, INT16U_size);
+    group[0] = (INT8U*)calloc(matrix_col*matrix_row, INT8U_size);
     if(group[0] == NULL)
     {
     	printf("Calloc Error!\n");
@@ -166,19 +167,19 @@ INT16U ** groupV_3(INT16U **inputMatrix, INT16U matrix_row, INT16U matrix_col)
 	return group;
 }
 
-INT16U** crop(INT16U startingPoINT16U_x, INT16U startingPoINT16U_y, INT16U** inputMatrix, INT16U img_w)
+INT8U** crop(INT8U startingPoINT8U_x, INT8U startingPoINT8U_y, INT8U** inputMatrix, INT8U img_w)
 {
-	INT16U i;
-	INT16U j;
-	INT16U* startingPoINT16UAddress = inputMatrix[0]+img_w * startingPoINT16U_x + startingPoINT16U_y;
-	printf("Staring Point Address: %d\n", startingPoINT16UAddress); 
-	INT16U** group = (INT16U**)calloc(cropSIZE, INT16U_poINT16Uer_size);
+	INT8U i;
+	INT8U j;
+	INT8U* startingPoINT8UAddress = inputMatrix[0]+img_w * startingPoINT8U_x + startingPoINT8U_y;
+	printf("Staring Point Address: %d\n", startingPoINT8UAddress); 
+	INT8U** group = (INT8U**)calloc(cropSIZE, INT8U_poINT8Uer_size);
     if(group == NULL)
     {
     	printf("Calloc Error!\n");
     	exit;
     }
-    group[0] = (INT16U*)calloc(cropSIZE*cropSIZE, INT16U_size);
+    group[0] = (INT8U*)calloc(cropSIZE*cropSIZE, INT8U_size);
     if(group[0] == NULL)
     {
     	printf("Calloc Error!\n");
@@ -189,7 +190,7 @@ INT16U** crop(INT16U startingPoINT16U_x, INT16U startingPoINT16U_y, INT16U** inp
 		group[i] = group[0] + i*cropSIZE;
 		for( j = 0; j < cropSIZE; j++)
 		{
-			group[i][j] = *(startingPoINT16UAddress + img_w*i + j); 
+			group[i][j] = *(startingPoINT8UAddress + img_w*i + j); 
 		}		
 	}
 	printf("Cropped Matrix\n");
@@ -197,31 +198,31 @@ INT16U** crop(INT16U startingPoINT16U_x, INT16U startingPoINT16U_y, INT16U** inp
 	return group;
 }
 
-//Optimization poINT16U： store the INT16Uermediate value to speed up the program
-INT16U** xcorr2(INT16U** inputMatrix, INT16U** xPATTERN)
+//Optimization poINT8U： store the INT8Uermediate value to speed up the program
+INT16U** xcorr2(INT8U** inputMatrix, INT8U** xPATTERN)
 {
-	INT16U i = 0;
-	INT16U j = 0;
-	INT16U m = 0;
-	INT16U n = 0;
-	INT16U product = 0;
-	INT16U sum;
-	INT16U output_size_length = offset_size_length;
-	INT16U* startingPoINT16UAddress;
-	INT16U** group = (INT16U**)calloc(output_size_length, sizeof(INT16U*));
+	INT8U i = 0;
+	INT8U j = 0;
+	INT8U m = 0;
+	INT8U n = 0;
+	INT8U product = 0;
+	INT8U sum;
+	INT8U output_size_length = offset_size_length;
+	INT8U* startingPoINT8UAddress;
+	INT16U** group = (INT8U**)calloc(output_size_length, sizeof(INT8U*));
 	for (; i < output_size_length; i++)
 	{
-		group[i] = (INT16U*)calloc(output_size_length, sizeof(INT16U));
+		group[i] = (INT8U*)calloc(output_size_length, sizeof(INT8U));
 		for(; j < output_size_length; j++)
 		{
 			sum = 0;
-			startingPoINT16UAddress = *inputMatrix + output_size_length*i + j;
+			startingPoINT8UAddress = *inputMatrix + output_size_length*i + j;
 			for( m; m < xPATTERN_length; m++)
 			{
 				for( n; n < xPATTERN_length; n++)
 				{
-					if((*((INT16U *)xPATTERN+xPATTERN_length*m+n))>0)
-						product = *(startingPoINT16UAddress + m*xPATTERN_length + n);
+					if((*((INT8U *)xPATTERN+xPATTERN_length*m+n))>0)
+						product = *(startingPoINT8UAddress + m*xPATTERN_length + n);
 					else
 						product = 0;
 					sum = sum + product;
@@ -233,12 +234,12 @@ INT16U** xcorr2(INT16U** inputMatrix, INT16U** xPATTERN)
 	return group;
 }
 
-INT16U* posMax(INT16U** inputMatrix)
+INT8U* posMax(INT8U** inputMatrix)
 {
-	INT16U* output = (INT16U*)calloc(3, sizeof(INT16U));
-	INT16U i = 0;
-	INT16U j = 0;
-	INT16U max = 0;
+	INT8U* output = (INT8U*)calloc(3, sizeof(INT8U));
+	INT8U i = 0;
+	INT8U j = 0;
+	INT8U max = 0;
 	for(; i<offset_size_length; i++)
 		for(; j <offset_size_length; j++)
 		{
@@ -251,53 +252,53 @@ INT16U* posMax(INT16U** inputMatrix)
 	return output; 
 }
 
-INT16U* calcCoord(INT16U img_w, INT16U img_h, INT16U previousPoINT16U[2])
+INT8U* calcCoord(INT8U img_w, INT8U img_h, INT8U previousPoINT8U[2])
 {
-	INT16U* output = (INT16U*)calloc(2, sizeof(INT16U));
-	if(previousPoINT16U[0] <= dSPAN)
+	INT8U* output = (INT8U*)calloc(2, sizeof(INT8U));
+	if(previousPoINT8U[0] <= dSPAN)
 		output[0] = 0;
-	else if (previousPoINT16U[0] > (img_w - dSPAN))
+	else if (previousPoINT8U[0] > (img_w - dSPAN))
 		output[0] = img_w - cropSIZE -1;
 	else
-		output[0] = previousPoINT16U[0] - dSPAN - 1;
-	if(previousPoINT16U[1] <= dSPAN)
+		output[0] = previousPoINT8U[0] - dSPAN - 1;
+	if(previousPoINT8U[1] <= dSPAN)
 		output[1] = 0;
-	else if (previousPoINT16U[1] > (img_h - dSPAN))
+	else if (previousPoINT8U[1] > (img_h - dSPAN))
 		output[1] = img_h - cropSIZE -1;
 	else
-		output[1] = previousPoINT16U[1] - dSPAN - 1;
+		output[1] = previousPoINT8U[1] - dSPAN - 1;
 	return output;
 }
 
-INT16U* objectPos(INT16U cropPoINT16U[2], INT16U offset[2])
+INT8U* objectPos(INT8U cropPoINT8U[2], INT8U offset[2])
 {
-	INT16U* output = (INT16U*)calloc(2, sizeof(INT16U));
-	output[0] = cropPoINT16U[0] + offset[0];
-	output[1] = cropPoINT16U[1] + offset[1];
+	INT8U* output = (INT8U*)calloc(2, sizeof(INT8U));
+	output[0] = cropPoINT8U[0] + offset[0];
+	output[1] = cropPoINT8U[1] + offset[1];
 	return output;
 }
 
-INT16U main()
+INT8U main()
 {
 	//each image is represented by a list
 	//First value of the list is the value of image height
 	//Second value of the list is the value of the real value of image weight
 	//Third value of the list is the value of maximum color
 	//Later is the R, G, B values of each pixel point, respectively, all the RGB values are oganized in an consecutive order accroding to C language convention
-	//int* test = test_ppm_1;
-	INT16U img_h = test[0];
-	INT16U img_w = test[1];
+	INT8U *test = test_ppm_1;
+	INT8U img_h = test[0];
+	INT8U img_w = test[1];
 	//Extended by the RGB value
-	INT16U img_w_0 = img_w * 3;
+	INT8U img_w_0 = img_w * 3;
 	//Start from the first R value 
-    INT16U **Matrix_ = matrix(test+3, img_h, img_w_0);
-    printf("size of INT16U: %d \n", sizeof(INT16U));
-    printf("size of INT16U*: %d \n", sizeof(INT16U*));
+    INT8U **Matrix_ = matrix(test+3, img_h, img_w_0);
+    printf("size of INT8U: %d \n", sizeof(INT8U));
+    printf("size of INT8U*: %d \n", sizeof(INT8U*));
     printf("Matrix_ Value: %d \n", Matrix_);
     printf("Matrix[0] Value: %d \n", Matrix_[0]);
-    INT16U **grayed = groupV_3(Matrix_, img_h, img_w);
+    INT8U **grayed = groupV_3(Matrix_, img_h, img_w);
     printf("grayed[1][2]] Address: %d \n", &grayed[1][2]);
-    INT16U **croped = crop(1,2,grayed, img_w);
+    INT8U **croped = crop(1,2,grayed, img_w);
     
 	return 0;
 }
