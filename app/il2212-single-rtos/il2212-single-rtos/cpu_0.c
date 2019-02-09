@@ -15,7 +15,7 @@
 
 #include "ascii_gray.h"
 #include "images.h"
-//#include "image_processing_functions.h"
+#include "functions.h"
 
 #define DEBUG 1
 
@@ -57,9 +57,14 @@ OS_STK    taskCALCCOORDSDF_stk[TASK_STACKSIZE];
 #define TASKCALCCOORDSDF_PERIOD 100
 
 
-#define SECTION_1 1
-
-
+#define SECTION_1 				1
+#define SECTION_GRAYSDF 		2
+#define SECTION_CROPSDF			3
+#define SECTION_XCORR2SDF		4
+#define SECTION_GETOFFSETSDF	5
+#define SECTION_CALCPOSSDF		6
+#define SECTION_DELAYSDF		7
+#define SECTION_CALCCOORDSDF	8
 
 
 /* Signals - Message queues */
@@ -70,17 +75,6 @@ OS_EVENT *TaskGETOFFSETSDFSem;
 OS_EVENT *TaskCALCPOSSDFSem;
 OS_EVENT *TaskDELAYSDFSem;
 OS_EVENT *TaskCALCCOORDSDFSem;
-//OS_EVENT *QGRAY2CROP;
-//OS_EVENT *QCALCCOORD2CROP;
-//OS_EVENT *QGRAY2CALCCOORD;
-//
-//OS_EVENT *QCROP2XCORR2;
-//OS_EVENT *QXCORR22GETOFFSET;
-//OS_EVENT *QGETOFFSET2CALCPOS;
-//
-//OS_EVENT *QCALCPOS2DELAY;
-//OS_EVENT *QDELAY2CALCCOORD;
-//OS_EVENT *QCALCCOORD2CALCPOS;
 
 
 /*
@@ -152,32 +146,48 @@ void task1(void* pdata)
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 		
 		/* Measurement here */
-		sram2sm_p3(image_sequence[current_image]);
+//		sram2sm_p3(image_sequence[current_image]);
 
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);  
+		/* Make available the next task */
+		OSSemPost(TaskGRAYSDFSem);
+
+		OSSemPend(Task1TmrSem, 0, &err);
+
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		/* Print report */
 		perf_print_formatted_report
 		(PERFORMANCE_COUNTER_0_BASE,            
 		ALT_CPU_FREQ,        // defined in "system.h"
-		1,                   // How many sections to print
-		"Section 1"        // Display-name of section(s).
+		8,                   // How many sections to print
+		"Task 1",        // Display-name of section(s).
+		"graySDF",        // Display-name of section(s).
+		"cropSDF",        // Display-name of section(s).
+		"xcorr2SDF",        // Display-name of section(s).
+		"getOffsetSDF",        // Display-name of section(s).
+		"calcPosSDF",        // Display-name of section(s).
+		"calcCoordSDF",        // Display-name of section(s).
+		"delaySDF"        // Display-name of section(s).
 		);   
 
 		/* Just to see that the task compiles correctly */
 		IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE,value++);
 
-		OSSemPend(Task1TmrSem, 0, &err);
+
+
+
 
 		/* Increment the image pointer */
 		current_image=(current_image+1) % sequence_length;
 
-		OSSemPost(TaskGRAYSDFSem);
+
+
+
 	}
 }
 
 
-
+// Transform the input RGB matrix to a greyscale matrix, the R,G,B valuses are placed consecutively
 void taskGRAYSDF(void* pdata)
 {
 	INT8U err;
@@ -185,12 +195,21 @@ void taskGRAYSDF(void* pdata)
 	while (1)
 	{
 		OSSemPend(TaskGRAYSDFSem, 0, &err);
+
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GRAYSDF);
+
+		/* Measurement here */
 		printf("Task GRAYSDF\n");
+
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_GRAYSDF);
+
 		OSSemPost(TaskCROPSDFSem);
 		OSSemPost(TaskCALCCOORDSDFSem);
 	}
 }
 
+
+// cut the image to a small piece of given size
 void taskCROPSDF(void* pdata)
 {
 	INT8U err;
@@ -199,12 +218,21 @@ void taskCROPSDF(void* pdata)
 	{
 		OSSemPend(TaskCROPSDFSem, 0, &err);
 		OSSemPend(TaskCROPSDFSem, 0, &err);
+
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CROPSDF);
+
+		/* Measurement here */
 		printf("Task CROPSDF\n");
+
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CROPSDF);
+
 		OSSemPost(TaskXCORR2SDFSem);
 
 	}
 }
 
+
+// calculate the coordinates of the next cropping point according to the previous object position
 void taskXCORR2SDF(void* pdata)
 {
 	INT8U err;
@@ -212,7 +240,14 @@ void taskXCORR2SDF(void* pdata)
 	while (1)
 	{
 		OSSemPend(TaskXCORR2SDFSem, 0, &err);
+
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_XCORR2SDF);
+
+		/* Measurement here */
 		printf("Task XCORR2SDF\n");
+
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_XCORR2SDF);
+
 		OSSemPost(TaskGETOFFSETSDFSem);
 	}
 }
@@ -224,7 +259,14 @@ void taskGETOFFSETSDF(void* pdata)
 	while (1)
 	{
 		OSSemPend(TaskGETOFFSETSDFSem, 0, &err);
+
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
+
+		/* Measurement here */
 		printf("Task GETOFFSETSDF\n");
+
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
+
 		OSSemPost(TaskCALCPOSSDFSem);
 	}
 }
@@ -237,11 +279,21 @@ void taskCALCPOSSDF(void* pdata)
 	{
 		OSSemPend(TaskCALCPOSSDFSem, 0, &err);
 		OSSemPend(TaskCALCPOSSDFSem, 0, &err);
+
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
+
+		/* Measurement here */
 		printf("Task CALCPOSSDF\n");
+
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
+
+
 		OSSemPost(TaskDELAYSDFSem);
 	}
 }
 
+
+// Initial delay token
 void taskDELAYSDF(void* pdata)
 {
 	INT8U err;
@@ -249,12 +301,22 @@ void taskDELAYSDF(void* pdata)
 	while (1)
 	{
 		OSSemPend(TaskDELAYSDFSem, 0, &err);
+
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_DELAYSDF);
+
+		/* Measurement here */
 		printf("Task DELAYSDF\n");
+
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_DELAYSDF);
+
+
 		OSSemPost(TaskCALCCOORDSDFSem);
 
 	}
 }
 
+
+// calculate the coordinates of the next cropping point according to the previous object position
 void taskCALCCOORDSDF(void* pdata)
 {
 	INT8U err;
@@ -263,7 +325,14 @@ void taskCALCCOORDSDF(void* pdata)
 	{
 		OSSemPend(TaskCALCCOORDSDFSem, 0, &err);
 		OSSemPend(TaskCALCCOORDSDFSem, 0, &err);
+
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
+
+		/* Measurement here */
 		printf("Task CALCCOORDSDF\n");
+
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
+
 		OSSemPost(TaskCROPSDFSem);
 		OSSemPost(TaskCALCPOSSDFSem);
 	}
@@ -341,16 +410,6 @@ void StartTask(void* pdata)
   TaskCALCPOSSDFSem 	= OSSemCreate(0);
   TaskDELAYSDFSem 		= OSSemCreate(1);
   TaskCALCCOORDSDFSem 	= OSSemCreate(0);
-
-//  QGRAY2CROP 		= OSQCreate;
-//  QCALCCOORD2CROP;
-//  QGRAY2CALCCOORD;
-//  QCROP2XCORR2;
-//  QXCORR22GETOFFSET;
-//  QGETOFFSET2CALCPOS;
-//  QCALCPOS2DELAY;
-//  QDELAY2CALCCOORD;
-//  QCALCCOORD2CALCPOS;
 
 
   /*
