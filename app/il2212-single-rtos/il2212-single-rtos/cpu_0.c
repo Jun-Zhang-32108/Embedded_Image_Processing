@@ -20,7 +20,7 @@
 #define DEBUG 1
 
 #define HW_TIMER_PERIOD 100 /* 100ms */
-
+#define OS_OPT_TIME_PERIODIC 1
 
 /* Definition of Task Stacks */
 #define   TASK_STACKSIZE       2048
@@ -75,6 +75,7 @@ OS_EVENT *TaskGETOFFSETSDFSem;
 OS_EVENT *TaskCALCPOSSDFSem;
 OS_EVENT *TaskDELAYSDFSem;
 OS_EVENT *TaskCALCCOORDSDFSem;
+OS_EVENT *TaskPrintReportSem;
 
 
 /*
@@ -106,7 +107,8 @@ void sram2sm_p3(unsigned char* base)
 /*
  * Global variables
  */
-int delay; // Delay of HW-timer 
+int delay; // Delay of HW-timer
+INT16U ** current_image_matrix;
 
 /*
  * ISR for HW Timer
@@ -146,14 +148,22 @@ void task1(void* pdata)
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 		
 		/* Measurement here */
-//		sram2sm_p3(image_sequence[current_image]);
+		sram2sm_p3(image_sequence[current_image]);
+//		INT16U ** matrix(INT16U *source, INT16U matrix_h, INT16U matrix_w);
+
+
+
+
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+
+		/* Just to see that the task compiles correctly */
+		IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE,value++);
 
 		/* Make available the next task */
 		OSSemPost(TaskGRAYSDFSem);
 
-		OSSemPend(Task1TmrSem, 0, &err);
 
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+		OSSemPend(TaskPrintReportSem, 0, &err);
 
 		/* Print report */
 		perf_print_formatted_report
@@ -170,11 +180,9 @@ void task1(void* pdata)
 		"delaySDF"        // Display-name of section(s).
 		);   
 
-		/* Just to see that the task compiles correctly */
-		IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE,value++);
 
 
-
+		OSSemPend(Task1TmrSem, 0, &err);
 
 
 		/* Increment the image pointer */
@@ -191,17 +199,33 @@ void task1(void* pdata)
 void taskGRAYSDF(void* pdata)
 {
 	INT8U err;
+	INT8U current_image=0;
 
 	while (1)
 	{
 		OSSemPend(TaskGRAYSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GRAYSDF);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		/* Measurement here */
-		printf("Task GRAYSDF\n");
+		printf("Task GRAYSDFF\n");
 
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_GRAYSDF);
+//		OSTimeDly(10,
+//		              OS_OPT_TIME_PERIODIC,
+//		              &err);
+		    /* Check “err” */
+
+//		unsigned char i = *image_sequence[current_image];
+//		unsigned char j = *(image_sequence[current_image]+1);
+//
+//		current_image_matrix = matrix(image_sequence[current_image], i, j);
+//		groupV_3(current_image_matrix, i, j);
+//		unsigned char i = *image_sequence[0];
+//		unsigned char j = *(image_sequence[0]+1);
+//
+//
+
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		OSSemPost(TaskCROPSDFSem);
 		OSSemPost(TaskCALCCOORDSDFSem);
@@ -219,12 +243,16 @@ void taskCROPSDF(void* pdata)
 		OSSemPend(TaskCROPSDFSem, 0, &err);
 		OSSemPend(TaskCROPSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CROPSDF);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		/* Measurement here */
 		printf("Task CROPSDF\n");
 
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CROPSDF);
+//		OSTimeDly(12,
+//				              OS_OPT_TIME_PERIODIC,
+//				              &err);
+//				    /* Check “err” */
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		OSSemPost(TaskXCORR2SDFSem);
 
@@ -241,12 +269,17 @@ void taskXCORR2SDF(void* pdata)
 	{
 		OSSemPend(TaskXCORR2SDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_XCORR2SDF);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		/* Measurement here */
 		printf("Task XCORR2SDF\n");
 
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_XCORR2SDF);
+//		OSTimeDly(15,
+//				              OS_OPT_TIME_PERIODIC,
+//				              &err);
+//				    /* Check “err” */
+
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		OSSemPost(TaskGETOFFSETSDFSem);
 	}
@@ -260,12 +293,17 @@ void taskGETOFFSETSDF(void* pdata)
 	{
 		OSSemPend(TaskGETOFFSETSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		/* Measurement here */
 		printf("Task GETOFFSETSDF\n");
 
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
+//		OSTimeDly(100,
+//				              OS_OPT_TIME_PERIODIC,
+//				              &err);
+//				    /* Check “err” */
+
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		OSSemPost(TaskCALCPOSSDFSem);
 	}
@@ -280,12 +318,17 @@ void taskCALCPOSSDF(void* pdata)
 		OSSemPend(TaskCALCPOSSDFSem, 0, &err);
 		OSSemPend(TaskCALCPOSSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		/* Measurement here */
 		printf("Task CALCPOSSDF\n");
 
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
+//		OSTimeDly(50,
+//				              OS_OPT_TIME_PERIODIC,
+//				              &err);
+//				    /* Check “err” */
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+
 
 
 		OSSemPost(TaskDELAYSDFSem);
@@ -302,14 +345,14 @@ void taskDELAYSDF(void* pdata)
 	{
 		OSSemPend(TaskDELAYSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_DELAYSDF);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		/* Measurement here */
 		printf("Task DELAYSDF\n");
 
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_DELAYSDF);
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
-
+		OSSemPost(TaskPrintReportSem);
 		OSSemPost(TaskCALCCOORDSDFSem);
 
 	}
@@ -326,15 +369,20 @@ void taskCALCCOORDSDF(void* pdata)
 		OSSemPend(TaskCALCCOORDSDFSem, 0, &err);
 		OSSemPend(TaskCALCCOORDSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		/* Measurement here */
 		printf("Task CALCCOORDSDF\n");
 
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
+//		OSTimeDly(20,
+//				              OS_OPT_TIME_PERIODIC,
+//				              &err);
+//				    /* Check “err” */
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		OSSemPost(TaskCROPSDFSem);
 		OSSemPost(TaskCALCPOSSDFSem);
+
 	}
 }
 
@@ -410,6 +458,7 @@ void StartTask(void* pdata)
   TaskCALCPOSSDFSem 	= OSSemCreate(0);
   TaskDELAYSDFSem 		= OSSemCreate(1);
   TaskCALCCOORDSDFSem 	= OSSemCreate(0);
+  TaskPrintReportSem 	= OSSemCreate(0);
 
 
   /*
