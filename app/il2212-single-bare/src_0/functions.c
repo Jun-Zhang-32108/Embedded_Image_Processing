@@ -141,14 +141,14 @@ INT8U ** matrix(INT8U *source, INT8U matrix_h, INT8U matrix_w)
     INT8U **group = (INT8U **) calloc(matrix_h, INT8U_poINT8Uer_size);
     if(group == NULL)
     {
-    	printf("Calloc Error!\n");
-    	exit(0);
+    	printf("Calloc Error! Inside the matrix function, location1\n");
+    	//exit(0);
     }
     group[0] = (INT8U*)calloc(matrix_h*matrix_w, INT8U_size);
     if(group[0] == NULL)
     {
-    	printf("Calloc Error!\n");
-    	exit(0);
+    	printf("Calloc Error! Inside the matrix function, location2\n");
+    	//exit(0);
     }
 	for( i = 0; i< matrix_h; i++)
 	{
@@ -172,14 +172,14 @@ INT8U ** groupV_3(INT8U **inputMatrix, INT8U matrix_row, INT8U matrix_col)
 	INT8U **group = (INT8U**)calloc(matrix_row, INT8U_poINT8Uer_size);
     if(group == NULL)
     {
-    	printf("Calloc Error!\n");
-    	exit(0);
+    	printf("Calloc Error! Inside the groupV_3 function, location1\n");
+    	//exit(0);
     }
     group[0] = (INT8U*)calloc(matrix_col*matrix_row, INT8U_size);
     if(group[0] == NULL)
     {
-    	printf("Calloc Error!\n");
-    	exit(0);
+    	printf("Calloc Error! Inside the groupV_3 function, location2\n");
+    	//exit(0);
     }
 	for ( i = 0; i < matrix_row; i++)
 	{
@@ -209,14 +209,14 @@ INT8U** crop(INT8U startingPoINT8U_x, INT8U startingPoINT8U_y, INT8U** inputMatr
 	INT8U** group = (INT8U**)calloc(cropSIZE, INT8U_poINT8Uer_size);
     if(group == NULL)
     {
-    	printf("Calloc Error!\n");
-    	exit(0);
+    	printf("Calloc Error! Inside the crop function, location1\n");
+    	//exit(0);
     }
     group[0] = (INT8U*)calloc(cropSIZE*cropSIZE, INT8U_size);
     if(group[0] == NULL)
     {
-    	printf("Calloc Error!\n");
-    	exit(0);
+    	printf("Calloc Error! Inside the crop function, location2\n");
+    	//exit(0);
     }
 	for ( i = 0; i < cropSIZE; i++)
 	{
@@ -226,8 +226,8 @@ INT8U** crop(INT8U startingPoINT8U_x, INT8U startingPoINT8U_y, INT8U** inputMatr
 			group[i][j] = *(startingPoINT8UAddress + img_w*i + j); 
 		}		
 	}
-//	printf("Cropped Matrix\n");
-//	printMatrix(group, cropSIZE, cropSIZE);
+	//printf("Cropped Matrix\n");
+	//printMatrix(group, cropSIZE, cropSIZE);
 	return group;
 }
 
@@ -245,14 +245,14 @@ INT16U ** xcorr2(INT8U **inputMatrix, INT8U xPATTERN[5][5], INT8U inputMatrix_w)
 	INT16U **group = (INT16U**)calloc(output_size_length, sizeof(INT16U*));
     if(group == NULL)
     {
-    	printf("Calloc Error!\n");
-    	exit(0);
+    	printf("Calloc Error! Inside the xcorr2 function, location1\n");
+    	//exit(0);
     }
 	group[0] = (INT16U*)calloc(output_size_length*output_size_length, sizeof(INT16U));
     if(group[0] == NULL)
     {
-    	printf("Calloc Error!\n");
-    	exit(0);
+    	printf("Calloc Error! Inside the xcorr2 function, location2\n");
+    	//exit(0);
     }
 	for ( i = 0; i < output_size_length; i++)
 	{
@@ -310,8 +310,8 @@ INT8U *calcCoord(INT8U *previousPoINT8U, INT8U img_h, INT8U img_w )
 	INT8U *output = (INT8U*)calloc(2, INT8U_size);
 	if(output == NULL)
 	{
-		printf("Calloc Error!\n");
-		exit(0);
+		printf("Calloc Error! Inside the calcCoord function, location1\n");
+		//exit(0);
 	}
 	if(previousPoINT8U[0] <= dSPAN)
 		output[0] = 0;
@@ -335,8 +335,8 @@ INT8U * objectPos(INT8U cropPoINT8U[2], INT8U *offset)
 	INT8U* output = (INT8U*)calloc(2, INT8U_size);
 	if(output == NULL)
 	{
-		printf("Calloc Error!\n");
-		exit(0);
+		printf("Calloc Error! Inside the objectPos function, location1\n");
+		//exit(0);
 	}
 	output[0] = cropPoINT8U[0] + offset[0] + 2;
 	output[1] = cropPoINT8U[1] + offset[1] + 2;
@@ -386,8 +386,8 @@ INT8U main()
 	INT8U *intial_point = (INT8U*)calloc(2, INT8U_size);
 	if(intial_point == NULL)
 	{
-		printf("Calloc Error!\n");
-		exit(0);
+		printf("Calloc Error! Inside the intial loop, location1\n");
+		//exit(0);
 	}
 	intial_point[0] = 0; 
 	intial_point[1] = 0;
@@ -439,7 +439,7 @@ INT8U main()
 	    free(position_Max);
 	    finalResult[counter][0] = detected[0];
 	    finalResult[counter][1] = detected[1];
-	    free(detected);
+	    //free(detected);
 	    printf("Test image %d : %d , %d \n\n",counter,finalResult[counter][0],finalResult[counter][1]);
     }
 
