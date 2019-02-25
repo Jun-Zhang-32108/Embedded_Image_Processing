@@ -1,8 +1,8 @@
 #!/bin/bash
 
-APP=lab2
+APP=single_rtos
 BSP_DIR=../../bsp
-BSP=lab2
+BSP=single_rtos
 CORE_DIR=../../hardware/de2_nios2_mpsoc
 SOPCINFO=nios2_mpsoc
 SOF=de2_nios2_mpsoc
@@ -21,6 +21,7 @@ nios2-bsp ucosii $BSP_DIR/${BSP} $CORE_DIR/$SOPCINFO.sopcinfo \
       --set hal.make.bsp_cflags_optimization -Os \
       --set hal.enable_sopc_sysid_check 1 \
       --set ucosii.os_tmr_en 1
+	  --set ucosii.os_q_en 1
 
 echo " "
 echo "BSP package creation finished"

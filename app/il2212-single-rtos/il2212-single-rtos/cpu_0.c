@@ -14,7 +14,6 @@
 #include "io.h"
 
 #include "ascii_gray.h"
-#include "images.h"
 #include "functions.h"
 
 #define DEBUG 1
@@ -67,7 +66,7 @@ OS_STK    taskCALCCOORDSDF_stk[TASK_STACKSIZE];
 #define SECTION_CALCCOORDSDF	8
 
 
-/* Signals - Message queues */
+/* Signals - Semaphores */
 OS_EVENT *TaskGRAYSDFSem;
 OS_EVENT *TaskCROPSDFSem;
 OS_EVENT *TaskXCORR2SDFSem;
@@ -77,7 +76,42 @@ OS_EVENT *TaskDELAYSDFSem;
 OS_EVENT *TaskCALCCOORDSDFSem;
 OS_EVENT *TaskPrintReportSem;
 
+// Semaphores
+OS_EVENT *Task1TmrSem;
 
+/* Signals - Message queues */
+OS_EVENT *MQ_GRAYSDF;
+OS_EVENT *MQ_CROPSDF;
+OS_EVENT *MQ_XCORR2SDF;
+OS_EVENT *MQ_GETOFFSETSDF;
+OS_EVENT *MQ_CALCPOSSDF;
+OS_EVENT *MQ_DELAYSDF;
+OS_EVENT *MQ_CALCCOORDSDF;
+OS_EVENT *MQ_PrintReport;
+
+
+// SW-Timer
+OS_TMR *Task1Tmr;
+
+/*
+ * Global variables
+ */
+int delay; // Delay of HW-timer
+INT16U ** current_image_matrix;
+
+INT8U *image;
+INT8U img_h;
+INT8U img_w;
+INT8U img_w_0;
+INT8U **Matrix_;
+INT8U **grayed;
+INT8U *previous_point;
+INT8U * detected;
+INT8U *coords;
+INT8U **croped;
+INT16U **xcropp2ed;
+INT8U *position_Max;
+INT8U counter = 0;
 /*
  * Example function for copying a p3 image from sram to the shared on-chip mempry
  */
@@ -104,11 +138,6 @@ void sram2sm_p3(unsigned char* base)
 	}
 }
 
-/*
- * Global variables
- */
-int delay; // Delay of HW-timer
-INT16U ** current_image_matrix;
 
 /*
  * ISR for HW Timer
@@ -120,11 +149,6 @@ alt_u32 alarm_handler(void* context)
   return delay;
 }
 
-// Semaphores
-OS_EVENT *Task1TmrSem;
-
-// SW-Timer
-OS_TMR *Task1Tmr;
 
 /* Timer Callback Functions */ 
 void Task1TmrCallback (void *ptmr, void *callback_arg){
@@ -199,33 +223,36 @@ void task1(void* pdata)
 void taskGRAYSDF(void* pdata)
 {
 	INT8U err;
-	INT8U current_image=0;
 
 	while (1)
 	{
 		OSSemPend(TaskGRAYSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+		if(counter == 4 )
+		{
+			printf("Right now we finish processing all the images.\n");
+			exit(0);
+		}
+
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GRAYSDF);
 
 		/* Measurement here */
 		printf("Task GRAYSDFF\n");
 
-//		OSTimeDly(10,
-//		              OS_OPT_TIME_PERIODIC,
-//		              &err);
-		    /* Check “err” */
+		image = image_sequence[counter];
+    	img_w = image[0];
+		img_h = image[1];
+		//Extended by the RGB value
+		img_w_0 = img_w * 3;
+		//Start from the first R value 
+	    Matrix_ = matrix(image+3, img_h, img_w_0);
 
-//		unsigned char i = *image_sequence[current_image];
-//		unsigned char j = *(image_sequence[current_image]+1);
-//
-//		current_image_matrix = matrix(image_sequence[current_image], i, j);
-//		groupV_3(current_image_matrix, i, j);
-//		unsigned char i = *image_sequence[0];
-//		unsigned char j = *(image_sequence[0]+1);
-//
-//
+	    grayed = groupV_3(Matrix_, img_h, img_w);
+		free(Matrix_[0]);
+		free(Matrix_);
+		counter += 1;
 
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_GRAYSDF);
 
 		OSSemPost(TaskCROPSDFSem);
 		OSSemPost(TaskCALCCOORDSDFSem);
@@ -243,16 +270,15 @@ void taskCROPSDF(void* pdata)
 		OSSemPend(TaskCROPSDFSem, 0, &err);
 		OSSemPend(TaskCROPSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CROPSDF);
 
 		/* Measurement here */
 		printf("Task CROPSDF\n");
+	    croped = crop(coords[0],coords[1],grayed, img_w);
+		free(grayed[0]);
+		free(grayed);
 
-//		OSTimeDly(12,
-//				              OS_OPT_TIME_PERIODIC,
-//				              &err);
-//				    /* Check “err” */
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CROPSDF);
 
 		OSSemPost(TaskXCORR2SDFSem);
 
@@ -269,17 +295,15 @@ void taskXCORR2SDF(void* pdata)
 	{
 		OSSemPend(TaskXCORR2SDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_XCORR2SDF);
 
 		/* Measurement here */
 		printf("Task XCORR2SDF\n");
+	   	xcropp2ed = xcorr2(croped, xPATTERN, cropSIZE);
+	   	free(croped[0]);
+	   	free(croped);
 
-//		OSTimeDly(15,
-//				              OS_OPT_TIME_PERIODIC,
-//				              &err);
-//				    /* Check “err” */
-
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_XCORR2SDF);
 
 		OSSemPost(TaskGETOFFSETSDFSem);
 	}
@@ -293,17 +317,15 @@ void taskGETOFFSETSDF(void* pdata)
 	{
 		OSSemPend(TaskGETOFFSETSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
 
 		/* Measurement here */
 		printf("Task GETOFFSETSDF\n");
+	    position_Max = posMax(xcropp2ed);
+	    free(xcropp2ed[0]);
+	    free(xcropp2ed);
 
-//		OSTimeDly(100,
-//				              OS_OPT_TIME_PERIODIC,
-//				              &err);
-//				    /* Check “err” */
-
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
 
 		OSSemPost(TaskCALCPOSSDFSem);
 	}
@@ -318,16 +340,15 @@ void taskCALCPOSSDF(void* pdata)
 		OSSemPend(TaskCALCPOSSDFSem, 0, &err);
 		OSSemPend(TaskCALCPOSSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
 
 		/* Measurement here */
 		printf("Task CALCPOSSDF\n");
-
-//		OSTimeDly(50,
-//				              OS_OPT_TIME_PERIODIC,
-//				              &err);
-//				    /* Check “err” */
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+	    detected = objectPos(coords,position_Max);
+	    free(coords);
+	    free(position_Max);
+	    printf("Test image %d : %d , %d \n\n",counter,detected[0],detected[1]);
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
 
 
 
@@ -340,18 +361,47 @@ void taskCALCPOSSDF(void* pdata)
 void taskDELAYSDF(void* pdata)
 {
 	INT8U err;
+	/*void *pmsg;
+	INT8U Init_StartingPoints[2] = {99,98};
+	err = OSQPost(MQ_DELAYSDF, (void *)&Init_StartingPoints[0]);
+	if(err != OS_ERR_NONE)
+	{
+		printf("Error! %s\n", err);
+	}
+	err = OSQPost(MQ_DELAYSDF, (void *)&Init_StartingPoints[1]);
+	if(err != OS_ERR_NONE)
+	{
+		printf("Error! %s\n", err);
+	}*/
+
+	INT8U *intial_point = (INT8U*)calloc(2, INT8U_size);
+	if(intial_point == NULL)
+	{
+		printf("Calloc Error! Inside the intial loop, location1\n");
+		//exit(0);
+	}
+	intial_point[0] = 0; 
+	intial_point[1] = 0;
+
+	detected = intial_point;
+
 
 	while (1)
 	{
 		OSSemPend(TaskDELAYSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_DELAYSDF);
+		// pmsg = OSQPend(MQ_DELAYSDF, 0, &err);
+		// printf("First message: %d. \n",*(INT8U *)pmsg);
+		// pmsg = OSQPend(MQ_DELAYSDF, 0, &err);
+		// printf("Second message: %d. \n",*(INT8U *)pmsg);
 
 		/* Measurement here */
 		printf("Task DELAYSDF\n");
+		previous_point = detected;
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_DELAYSDF);
 
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
-
+		//OSSemPost(TaskPrintReportSem);
 		OSSemPost(TaskPrintReportSem);
 		OSSemPost(TaskCALCCOORDSDFSem);
 
@@ -369,16 +419,12 @@ void taskCALCCOORDSDF(void* pdata)
 		OSSemPend(TaskCALCCOORDSDFSem, 0, &err);
 		OSSemPend(TaskCALCCOORDSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
 
 		/* Measurement here */
 		printf("Task CALCCOORDSDF\n");
-
-//		OSTimeDly(20,
-//				              OS_OPT_TIME_PERIODIC,
-//				              &err);
-//				    /* Check “err” */
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+	    coords = calcCoord(previous_point, img_h, img_w );
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
 
 		OSSemPost(TaskCROPSDFSem);
 		OSSemPost(TaskCALCPOSSDFSem);
@@ -460,6 +506,14 @@ void StartTask(void* pdata)
   TaskCALCCOORDSDFSem 	= OSSemCreate(0);
   TaskPrintReportSem 	= OSSemCreate(0);
 
+   /*
+   * Creation of message queues
+   */
+  INT8U *DELAY_Q[2];
+  MQ_DELAYSDF 			= OSQCreate(&DELAY_Q[0], 2);
+
+
+
 
   /*
    * Create statistics task
@@ -470,6 +524,10 @@ void StartTask(void* pdata)
   /*
    * Creating Tasks in the system
    */
+
+
+
+//This task is not needed for the single-rtos lab
 
   err=OSTaskCreateExt(task1,
                   NULL,
@@ -486,6 +544,10 @@ void StartTask(void* pdata)
       printf("Task1 created\n");
     }
    }
+
+
+
+
 
   err=OSTaskCreateExt(taskGRAYSDF,
                   NULL,

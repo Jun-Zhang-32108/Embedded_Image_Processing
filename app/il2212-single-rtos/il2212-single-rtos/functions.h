@@ -12,7 +12,6 @@
  * Todo list 2: Optimize the code in terms of time complexity and space complexity
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 
 //Path:\il2212-lab-master\app\hello_image\src_0
@@ -22,8 +21,9 @@
 
 //Define two new datatypes to save memory. Since the maximum grayscale value is 255, INT8U (8 bits) should be big enough to hold most variables.
 //Only when we call xcorr2 functions the dot product value is possible to be greater than 255. So we use INT16U to hold that value.  
-typedef unsigned char INT8U;
-typedef unsigned short INT16U;
+
+//typedef unsigned char INT8U;
+//typedef unsigned short INT16U;
 
 INT8U dSPAN = 15;
 //Here I use 33 instead of 31 because if we use 31, it may not capture the whole pattern when the pattern move 15 pixels in one frame
@@ -35,6 +35,8 @@ INT8U xPATTERN[5][5] = {{0,0,1,0,0},
 					  {0,0,1,0,0}};					  
 INT8U xPATTERN_length = 5;
 INT8U offset_size_length = 29; // offset_size_length = cropSIZE - 4
+INT8U INT8U_poINT8Uer_size = sizeof(INT8U*);
+INT8U INT8U_size		   = sizeof(INT8U);
 
 // INT8U INT8U_poINT8Uer_size = sizeof(INT8U*);
 // INT8U INT8U_size = sizeof(INT8U);
@@ -302,7 +304,7 @@ INT8U * objectPos(INT8U cropPoINT8U[2], INT8U *offset)
 	return output;
 }
 
-INT8U main()
+INT8U loop()
 {
 	//each image is represented by a list
 	//First value of the list is the value of image height
