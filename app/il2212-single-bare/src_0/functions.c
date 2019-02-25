@@ -1,6 +1,6 @@
 /* Date: 2019-2-5
  * Author: Jun Zhang, Jaakko Laiho
- * Email£º zhangjun32108@outlook.com 
+ * Emailï¿½ï¿½ zhangjun32108@outlook.com 
  * Description: An image processing program that captures the required pattern in each frame of the input flow
  */
 
@@ -14,6 +14,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "system.h"
+#include "altera_avalon_performance_counter.h"
+
+#define SECTION_GRAYSDF 		1
+#define SECTION_CALCCOORDSDF	2
+#define SECTION_CROPSDF			3
+#define SECTION_XCORR2SDF		4
+#define SECTION_CALCPOSSDF		5
+
+				
 
 //Path:\il2212-lab-master\app\hello_image\src_0
 //Contain the RGB value of tesing image. Using this test .h file can avoid reading data from the PPM file. 
@@ -404,8 +414,12 @@ INT8U main()
 	INT16U **xcropp2ed;
 	INT8U *position_Max;
 	INT8U finalResult[sequence_length][2];
+	
+
+
     for( counter = 0; counter < sequence_length; counter++)
     {
+    	
 		image = image_sequence[counter];
     	img_w = image[0];
 		img_h = image[1];
@@ -415,33 +429,69 @@ INT8U main()
 	    Matrix_ = matrix(image+3, img_h, img_w_0);
 //		free(image);
 //		image = NULL;
+	    PERF_RESET(PERFORMANCE_COUNTER_0_BASE);
+		PERF_START_MEASURING (PERFORMANCE_COUNTER_0_BASE);
+		
+	    PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GRAYSDF);
 	    grayed = groupV_3(Matrix_, img_h, img_w);
 		free(Matrix_[0]);
 		free(Matrix_);
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_GRAYSDF);
+		
 	    if(counter == 0)
 	    {
 	    	previous_point = intial_point; 
 	    }
 	    else
 	    	previous_point = detected;
+
+	    PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
 	    coords = calcCoord(previous_point, img_h, img_w );
+	    PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
+
+	    PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CROPSDF);
 	    croped = crop(coords[0],coords[1],grayed, img_w);
 		free(grayed[0]);
-		free(grayed);	    
+		free(grayed);
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CROPSDF);
+
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_XCORR2SDF);
 	   	xcropp2ed = xcorr2(croped, xPATTERN, cropSIZE);
 	   	free(croped[0]);
 	   	free(croped);
+	   	PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_XCORR2SDF);
+
+//	   	PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
 	    position_Max = posMax(xcropp2ed);
 	    free(xcropp2ed[0]);
 	    free(xcropp2ed);
+//	    PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
+
+	    PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
 	    detected = objectPos(coords,position_Max);
 	    free(coords);
 	    free(position_Max);
+	    PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
+	    
 	    finalResult[counter][0] = detected[0];
 	    finalResult[counter][1] = detected[1];
 	    //free(detected);
 	    printf("Test image %d : %d , %d \n\n",counter,finalResult[counter][0],finalResult[counter][1]);
+	    
+	    PERF_STOP_MEASURING (PERFORMANCE_COUNTER_0_BASE);
+
+	    perf_print_formatted_report
+	    		(PERFORMANCE_COUNTER_0_BASE,
+	    		ALT_CPU_FREQ,        // defined in "system.h"
+	    		5,                   // How many sections to print
+	    		"graySDF",
+				"calcCoordSDF",
+				"cropSDF",
+				"xcorr2SDF",
+				"calcPosSDF"
+	    		);
     }
+
 
 	return 0;
 }

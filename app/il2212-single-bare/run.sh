@@ -16,11 +16,12 @@ CORE_DIR=../../hardware/de2_nios2_mpsoc
 CORE_FILE=$CORE_DIR/nios2_mpsoc.sopcinfo
 SOF_FILE=$CORE_DIR/de2_nios2_mpsoc.sof
 JDI_FILE=$CORE_DIR/de2_nios2_mpsoc.jdi
-BSP_PATH=../../bsp/single_bare
+BSP_PATH=../../bsp/lab2
 SRC_PATH=./src_0
 
 APP_NAME=single_bare
 CPU_NAME=cpu_0
+
 
 # checking if the core or the run script has been modified, to avoid
 # unnecessary recompilation of the BSP.

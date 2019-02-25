@@ -56,13 +56,14 @@ OS_STK    taskCALCCOORDSDF_stk[TASK_STACKSIZE];
 #define TASKCALCCOORDSDF_PERIOD 100
 
 
-#define SECTION_1 				1
-#define SECTION_GRAYSDF 		2
-#define SECTION_CROPSDF			3
-#define SECTION_XCORR2SDF		4
-#define SECTION_GETOFFSETSDF	5
-#define SECTION_CALCCOORDSDF	6
-#define SECTION_CALCPOSSDF		7
+//#define SECTION_1 				1
+#define SECTION_GRAYSDF 		1
+#define SECTION_CROPSDF			2
+#define SECTION_XCORR2SDF		3
+//#define SECTION_GETOFFSETSDF	4
+#define SECTION_CALCCOORDSDF	4
+#define SECTION_CALCPOSSDF		5
+//#define SECTION_placeholder		7
 
 
 /* Signals - Semaphores */
@@ -166,40 +167,16 @@ void task1(void* pdata)
 		unsigned char i = *image_sequence[current_image];
 		unsigned char j = *(image_sequence[current_image]+1);
 
-		PERF_RESET(PERFORMANCE_COUNTER_0_BASE);
-		PERF_START_MEASURING (PERFORMANCE_COUNTER_0_BASE);
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
+
 		
 		/* Measurement here */
 //		sram2sm_p3(image_sequence[current_image]);
-
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
 		/* Just to see that the task compiles correctly */
 		IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE,value++);
 
 		/* Make available the next task */
 		OSSemPost(TaskGRAYSDFSem);
-
-
-		OSSemPend(TaskPrintReportSem, 0, &err);
-
-		PERF_STOP_MEASURING (PERFORMANCE_COUNTER_0_BASE);
-		/* Print report */
-		perf_print_formatted_report
-		(PERFORMANCE_COUNTER_0_BASE,            
-		ALT_CPU_FREQ,        // defined in "system.h"
-		7,                   // How many sections to print
-		"Task 1",        // Display-name of section(s).
-		"graySDF",
-		"cropSDF",
-		"xcorr2SDF",
-		"getOffsetSDF",
-		"calcCoordSDF",
-		"calcPosSDF"
-		);
-
-
 
 		OSSemPend(Task1TmrSem, 0, &err);
 
@@ -228,7 +205,8 @@ void taskGRAYSDF(void* pdata)
 			printf("Right now we finish processing all the images.\n");
 			exit(0);
 		}
-
+		PERF_RESET(PERFORMANCE_COUNTER_0_BASE);
+		PERF_START_MEASURING (PERFORMANCE_COUNTER_0_BASE);
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GRAYSDF);
 
 		/* Measurement here */
@@ -312,7 +290,7 @@ void taskGETOFFSETSDF(void* pdata)
 	{
 		OSSemPend(TaskGETOFFSETSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
+		//PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
 
 		/* Measurement here */
 		printf("Task GETOFFSETSDF\n");
@@ -320,7 +298,7 @@ void taskGETOFFSETSDF(void* pdata)
 	    free(xcropp2ed[0]);
 	    free(xcropp2ed);
 
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
+//		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
 
 		OSSemPost(TaskCALCPOSSDFSem);
 	}
@@ -345,8 +323,21 @@ void taskCALCPOSSDF(void* pdata)
 	    printf("Test image %d : %d , %d \n\n",counter,detected[0],detected[1]);
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
 
+		PERF_STOP_MEASURING (PERFORMANCE_COUNTER_0_BASE);
+				/* Print report */
+				perf_print_formatted_report
+				(PERFORMANCE_COUNTER_0_BASE,
+				ALT_CPU_FREQ,        // defined in "system.h"
+				5,                   // How many sections to print
+				"graySDF",
+				"cropSDF",
+				"xcorr2SDF",
+//				"getOffsetSDF",
+				"calcCoordSDF",
+				"calcPosSDF"
+				);
+
 		OSSemPost(TaskDELAYSDFSem);
-		OSSemPost(TaskPrintReportSem);
 	}
 }
 
@@ -652,34 +643,9 @@ void StartTask(void* pdata)
   OSTaskDel(OS_PRIO_SELF);
 }
 
-//#include <stdio.h>
-//#include "sys/alt_timestamp.h"
-//#include "alt_types.h"
-
 
 int main(void) {
 
-
-//	alt_u32 time1;
-//	alt_u32 time2;
-//	alt_u32 timestamp_overhead;
-//	if (alt_timestamp_start() < 0)
-//	{
-//		printf ("No timestamp device available\n");
-//	}
-//	else
-//	{
-//		time1 = alt_timestamp();
-//		int i;
-//		for (i = 0; i < 10; i++) {
-//			time2 = alt_timestamp();
-//			timestamp_overhead += time2 - time1;
-//			time1 = time2;
-//		}
-//		timestamp_overhead /= 10;
-//		printf ("time in timestamp_overhead = %u ticks\n", (unsigned int) (timestamp_overhead));
-//		printf ("Number of ticks per second = %u\n",(unsigned int)alt_timestamp_freq());
-//	}
 
   printf("MicroC/OS-II-Vesion: %1.2f\n", (double) OSVersion()/100.0);
 
