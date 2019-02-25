@@ -15,7 +15,6 @@
 
 #include "ascii_gray.h"
 #include "functions.h"
-#include "performance_measurement.h"
 
 #define DEBUG 1
 
