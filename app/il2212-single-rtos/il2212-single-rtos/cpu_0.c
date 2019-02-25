@@ -15,6 +15,7 @@
 
 #include "ascii_gray.h"
 #include "functions.h"
+#include "performance_measurement.h"
 
 #define DEBUG 1
 
@@ -61,9 +62,8 @@ OS_STK    taskCALCCOORDSDF_stk[TASK_STACKSIZE];
 #define SECTION_CROPSDF			3
 #define SECTION_XCORR2SDF		4
 #define SECTION_GETOFFSETSDF	5
-#define SECTION_CALCPOSSDF		6
-#define SECTION_DELAYSDF		7
-#define SECTION_CALCCOORDSDF	8
+#define SECTION_CALCCOORDSDF	6
+#define SECTION_CALCPOSSDF		7
 
 
 /* Signals - Semaphores */
@@ -172,11 +172,7 @@ void task1(void* pdata)
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 		
 		/* Measurement here */
-		sram2sm_p3(image_sequence[current_image]);
-//		INT16U ** matrix(INT16U *source, INT16U matrix_h, INT16U matrix_w);
-
-
-
+//		sram2sm_p3(image_sequence[current_image]);
 
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_1);
 
@@ -189,20 +185,20 @@ void task1(void* pdata)
 
 		OSSemPend(TaskPrintReportSem, 0, &err);
 
+		PERF_STOP_MEASURING (PERFORMANCE_COUNTER_0_BASE);
 		/* Print report */
 		perf_print_formatted_report
 		(PERFORMANCE_COUNTER_0_BASE,            
 		ALT_CPU_FREQ,        // defined in "system.h"
-		8,                   // How many sections to print
+		7,                   // How many sections to print
 		"Task 1",        // Display-name of section(s).
-		"graySDF",        // Display-name of section(s).
-		"cropSDF",        // Display-name of section(s).
-		"xcorr2SDF",        // Display-name of section(s).
-		"getOffsetSDF",        // Display-name of section(s).
-		"calcPosSDF",        // Display-name of section(s).
-		"calcCoordSDF",        // Display-name of section(s).
-		"delaySDF"        // Display-name of section(s).
-		);   
+		"graySDF",
+		"cropSDF",
+		"xcorr2SDF",
+		"getOffsetSDF",
+		"calcCoordSDF",
+		"calcPosSDF"
+		);
 
 
 
@@ -350,9 +346,8 @@ void taskCALCPOSSDF(void* pdata)
 	    printf("Test image %d : %d , %d \n\n",counter,detected[0],detected[1]);
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
 
-
-
 		OSSemPost(TaskDELAYSDFSem);
+		OSSemPost(TaskPrintReportSem);
 	}
 }
 
@@ -390,19 +385,9 @@ void taskDELAYSDF(void* pdata)
 	{
 		OSSemPend(TaskDELAYSDFSem, 0, &err);
 
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_DELAYSDF);
-		// pmsg = OSQPend(MQ_DELAYSDF, 0, &err);
-		// printf("First message: %d. \n",*(INT8U *)pmsg);
-		// pmsg = OSQPend(MQ_DELAYSDF, 0, &err);
-		// printf("Second message: %d. \n",*(INT8U *)pmsg);
-
-		/* Measurement here */
-		printf("Task DELAYSDF\n");
 		previous_point = detected;
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_DELAYSDF);
 
-		//OSSemPost(TaskPrintReportSem);
-		OSSemPost(TaskPrintReportSem);
+
 		OSSemPost(TaskCALCCOORDSDFSem);
 
 	}
@@ -668,10 +653,38 @@ void StartTask(void* pdata)
   OSTaskDel(OS_PRIO_SELF);
 }
 
+//#include <stdio.h>
+//#include "sys/alt_timestamp.h"
+//#include "alt_types.h"
+
 
 int main(void) {
 
+
+//	alt_u32 time1;
+//	alt_u32 time2;
+//	alt_u32 timestamp_overhead;
+//	if (alt_timestamp_start() < 0)
+//	{
+//		printf ("No timestamp device available\n");
+//	}
+//	else
+//	{
+//		time1 = alt_timestamp();
+//		int i;
+//		for (i = 0; i < 10; i++) {
+//			time2 = alt_timestamp();
+//			timestamp_overhead += time2 - time1;
+//			time1 = time2;
+//		}
+//		timestamp_overhead /= 10;
+//		printf ("time in timestamp_overhead = %u ticks\n", (unsigned int) (timestamp_overhead));
+//		printf ("Number of ticks per second = %u\n",(unsigned int)alt_timestamp_freq());
+//	}
+
   printf("MicroC/OS-II-Vesion: %1.2f\n", (double) OSVersion()/100.0);
+
+
 
   OSTaskCreateExt(
 	 StartTask, // Pointer to task code
