@@ -79,13 +79,57 @@
  */
 
 #include "sys/alt_stdio.h"
+#include <altera_avalon_mutex.h>
 
 int main()
 { 
   alt_putstr("Hello cpu_4!\n");
+  alt_mutex_dev* mutex_4 = altera_avalon_mutex_open( "/dev/mutex_4" );
+  	if(mutex_4) {
+  		alt_putstr("cpu_4 found mutex_4 handle");
+  	}
+  	alt_mutex_dev* mutex_0 = altera_avalon_mutex_open( "/dev/mutex_0" );
+  	if(mutex_0) {
+		alt_putstr("cpu_4 found mutex_0 handle");
+		
+	}
 
-  /* Event loop never exits. */
-  while (1);
-
-  return 0;
+  	
+  	while (1) {
+	altera_avalon_mutex_lock(mutex_0, 1);
+	if(!altera_avalon_mutex_is_mine(mutex_4)) {
+		altera_avalon_mutex_lock(mutex_4, 1);
+		alt_putstr("cpu_4 reading image\n");
+		
+		/*
+		* TODO: read image from shared memory here
+		* */
+		delay(100); 	//simulating read time
+		
+		altera_avalon_mutex_unlock(mutex_4);
+		
+		/*
+	   * TODO: put grayscaling here
+	   * */
+		alt_putstr("cpu_4 grayscaling\n");
+		
+		
+		altera_avalon_mutex_unlock(mutex_0);
+		
+		//xcorr synchronisation
+		altera_avalon_mutex_lock(mutex_4, 1);
+		altera_avalon_mutex_lock(mutex_0, 1);
+		alt_putstr("cpu_4 xcorr2'ing image\n");
+		
+		/*
+		* TODO: xcorr2 here
+		* */
+		delay(100); 	//simulate xcorr time
+		
+		
+		altera_avalon_mutex_unlock(mutex_4);
+		altera_avalon_mutex_unlock(mutex_0);
+		}
+  	}
+  	return 0;
 }

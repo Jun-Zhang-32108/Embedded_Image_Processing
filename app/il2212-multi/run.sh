@@ -17,7 +17,7 @@ JDI_FILE=$CORE_DIR/de2_nios2_mpsoc.jdi
 BSP_PATH=../../bsp/mpsoc_hello_mpsoc
 SRC_PATH=./src
 
-APP=hello_mpsoc        # same name as the folder
+APP=il2212-multi        # same name as the folder
 CPU=cpu
 NODES=4
 
