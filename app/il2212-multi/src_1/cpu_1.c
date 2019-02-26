@@ -37,11 +37,12 @@ int main()
 			
 			//xcorr synchronisation
 			altera_avalon_mutex_lock(mutex_1, 1);
-			alt_putstr("cpu_1 xcorr2'ing image\n");
+			
 			
 			/*
 			* TODO: xcorr2 here
 			* */
+			alt_putstr("cpu_1 xcorr2'ing image\n");
 			delay(100); 	//simulate xcorr time
 			
 			

@@ -109,26 +109,27 @@ int main()
 		altera_avalon_mutex_unlock(mutex_4);
 		
 		/*
-	   * TODO: put grayscaling here
-	   * */
+		* TODO: put grayscaling here
+		* */
 		alt_putstr("cpu_4 grayscaling\n");
+		delay(100); 	//simulating read time
 		
-		
+		//synchronise with cpu_0 to wait for all cores to finish with grayscaling
 		altera_avalon_mutex_unlock(mutex_0);
 		
 		//xcorr synchronisation
 		altera_avalon_mutex_lock(mutex_4, 1);
-		altera_avalon_mutex_lock(mutex_0, 1);
-		alt_putstr("cpu_4 xcorr2'ing image\n");
+		
+		
 		
 		/*
 		* TODO: xcorr2 here
 		* */
+		alt_putstr("cpu_4 xcorr2'ing image\n");
 		delay(100); 	//simulate xcorr time
 		
 		
 		altera_avalon_mutex_unlock(mutex_4);
-		altera_avalon_mutex_unlock(mutex_0);
 		}
   	}
   	return 0;

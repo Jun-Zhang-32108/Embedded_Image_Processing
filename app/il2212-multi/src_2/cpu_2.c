@@ -35,11 +35,12 @@ int main()
 			alt_putstr("cpu_2 grayscaling\n");
 			//xcorr synchronisation
 			altera_avalon_mutex_lock(mutex_2, 1);
-			alt_putstr("cpu_2 xcorr2'ing image\n");
+			
 			
 			/*
 			* TODO: xcorr2 here
 			* */
+			alt_putstr("cpu_2 xcorr2'ing image\n");
 			delay(100); 	//simulate xcorr time
 			
 			

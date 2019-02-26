@@ -222,12 +222,6 @@ int main()
 			alt_putstr("cpu_0 cant open mutex 4 because does not own mutex 4\n");
 		}
 		
-		
-		/*
-		 * wait for cpu 4 to finish xcorring
-		 * */
-		altera_avalon_mutex_lock(mutex_0, 1);
-		altera_avalon_mutex_unlock(mutex_0);
 				
 		
 		/*
