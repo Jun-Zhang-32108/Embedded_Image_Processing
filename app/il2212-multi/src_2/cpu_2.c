@@ -7,7 +7,7 @@
 extern void delay (int millisec);
 char count = 0;
 
-unsigned int* shared = (unsigned int*) SHARED_ONCHIP_BASE;
+unsigned char* shared = (unsigned char*) SHARED_ONCHIP_BASE;
 
 int main()
 {
