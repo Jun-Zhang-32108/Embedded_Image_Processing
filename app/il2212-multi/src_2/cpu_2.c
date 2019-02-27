@@ -1,11 +1,13 @@
 //#include <stdio.h>
-//#include "system.h"
+#include "system.h"
 //#include "io.h"
 #include "sys/alt_stdio.h"
 #include <altera_avalon_mutex.h>
 
 extern void delay (int millisec);
 char count = 0;
+
+unsigned int* shared = (unsigned int*) SHARED_ONCHIP_BASE;
 
 int main()
 {
@@ -20,11 +22,11 @@ int main()
 			altera_avalon_mutex_lock(mutex_2, 1);
 			alt_putstr("cpu_2 reading image\n");
 			  
-			  
 			/*
 			* TODO: read image from shared memory here
 			* */
 			delay(100); 	//simulating read time
+			alt_printf("cpu_2 read %x\n", *shared);
 			
 			//signal read completion
 			altera_avalon_mutex_unlock(mutex_2);
@@ -70,7 +72,8 @@ int main()
 			* TODO: write result to shared memory here
 			* */
 			alt_putstr("cpu_2 writing result\n");
-			delay(100); 	//simulating read time
+			delay(100); 	//simulating write time
+//			*shared = 22;
 			
 			//signal write completion
 			altera_avalon_mutex_unlock(mutex_2);

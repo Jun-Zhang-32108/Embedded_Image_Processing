@@ -1,5 +1,5 @@
 //#include <stdio.h>
-//#include "system.h"
+#include "system.h"
 #include "altera_avalon_pio_regs.h"
 //#include "io.h"
 #include "sys/alt_stdio.h"
@@ -8,7 +8,33 @@
 extern void delay (int millisec);
 char count = 0;
 
+unsigned int* shared = (unsigned int*) SHARED_ONCHIP_BASE;
 
+/*
+ * Example function for copying a p3 image from sram to the shared on-chip mempry
+ */
+void sram2sm_p3(unsigned char* base)
+{
+	int x, y;
+	unsigned char* shared;
+
+	shared = (unsigned char*) SHARED_ONCHIP_BASE;
+
+	int size_x = *base++;
+	int size_y = *base++;
+	int max_col= *base++;
+	*shared++  = size_x;
+	*shared++  = size_y;
+	*shared++  = max_col;
+	printf("The image is: %d x %d!! \n", size_x, size_y);
+	for(y = 0; y < size_y; y++)
+	for(x = 0; x < size_x; x++)
+	{
+		*shared++ = *base++; 	// R
+		*shared++ = *base++;	// G
+		*shared++ = *base++;	// B
+	}
+}
 
 
 int main()
@@ -27,6 +53,10 @@ int main()
 	altera_avalon_mutex_trylock(mutex_2, 1);
 	altera_avalon_mutex_trylock(mutex_3, 1);
 	altera_avalon_mutex_trylock(mutex_4, 1);
+	
+	
+	
+//	*shared = 10;
 	
 	
 	while (1) {
@@ -52,7 +82,7 @@ int main()
 		 * schedule reading from memory
 		 * */
 		alt_putstr("cpu_0 scheduling reading\n");
-		
+//		*shared = 11;
 		if(altera_avalon_mutex_is_mine(mutex_1)) {
 			alt_putstr("cpu_0 giving control to cpu 1\n");
 			altera_avalon_mutex_unlock(mutex_1);
@@ -61,7 +91,7 @@ int main()
 		} else {
 			alt_putstr("cpu_0 cant open mutex 1 because does not own mutex 1\n");
 		}
-		
+//		*shared = 12;
 		if(altera_avalon_mutex_is_mine(mutex_2)) {
 			alt_putstr("cpu_0 giving control to cpu 2\n");
 			altera_avalon_mutex_unlock(mutex_2);
@@ -70,7 +100,7 @@ int main()
 		} else {
 			alt_putstr("cpu_0 cant open mutex 2 because does not own mutex 2\n");
 		}
-		
+//		*shared = 13;
 		if(altera_avalon_mutex_is_mine(mutex_3)) {
 			alt_putstr("cpu_0 giving control to cpu 3\n");
 			altera_avalon_mutex_unlock(mutex_3);
@@ -79,7 +109,7 @@ int main()
 		} else {
 			alt_putstr("cpu_0 cant open mutex 3 because does not own mutex 3\n");
 		}
-		
+//		*shared = 14;
 		if(altera_avalon_mutex_is_mine(mutex_4)) {
 			alt_putstr("cpu_0 giving control to cpu 4\n");
 			altera_avalon_mutex_unlock(mutex_4);
@@ -173,6 +203,7 @@ int main()
 		 * */
 		alt_putstr("cpu_0 reading results from memory\n");
 		delay(100);	//simulating memory access
+		alt_printf("cpu_0 read %x\n", *shared);
 
 		
 		/*

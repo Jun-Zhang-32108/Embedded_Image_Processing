@@ -1,5 +1,5 @@
 //#include <stdio.h>
-//#include "system.h"
+#include "system.h"
 //#include "io.h"
 #include "sys/alt_stdio.h"
 #include <altera_avalon_mutex.h>
@@ -7,15 +7,15 @@
 extern void delay (int millisec);
 char count = 0;
 
+unsigned int* shared = (unsigned int*) SHARED_ONCHIP_BASE;
+
 int main()
 { 
-  alt_putstr("Hello cpu_4!\n");
-  alt_mutex_dev* mutex_4 = altera_avalon_mutex_open( "/dev/mutex_4" );
+	alt_putstr("Hello cpu_4!\n");
+	alt_mutex_dev* mutex_4 = altera_avalon_mutex_open( "/dev/mutex_4" );
   	if(mutex_4) {
   		alt_putstr("cpu_4 found mutex_4 handle\n");
   	}
-
-
   	
   	while (1) {
 		if(!altera_avalon_mutex_is_mine(mutex_4)) {
@@ -26,12 +26,12 @@ int main()
 			* TODO: read image from shared memory here
 			* */
 			delay(100); 	//simulating read time
+			alt_printf("cpu_4 read %x\n", *shared);
 			
 			//signal read completion
 			altera_avalon_mutex_unlock(mutex_4);
 			delay(1);
 			altera_avalon_mutex_lock(mutex_4, 1);
-			
 			
 			/*
 			* TODO: put grayscaling here
@@ -72,7 +72,8 @@ int main()
 			* TODO: write result to shared memory here
 			* */
 			alt_putstr("cpu_4 writing result\n");
-			delay(100); 	//simulating read time
+			delay(100); 	//simulating write time
+//			*shared = 24;
 			
 			//signal write completion
 			altera_avalon_mutex_unlock(mutex_4);
