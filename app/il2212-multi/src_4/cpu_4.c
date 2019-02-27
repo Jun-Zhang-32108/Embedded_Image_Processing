@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include "system.h"
-#include "io.h"
+//#include <stdio.h>
+//#include "system.h"
+//#include "io.h"
 #include "sys/alt_stdio.h"
 #include <altera_avalon_mutex.h>
 
