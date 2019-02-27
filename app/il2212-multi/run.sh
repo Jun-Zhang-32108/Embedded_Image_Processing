@@ -10,6 +10,11 @@
 # 
 # Start the script with sh ./run.sh
 
+rm -rf *.txt
+rm -rf *.elf
+rm -rf *.objdump
+rm -rf *.map
+
 CORE_DIR=../../hardware/de2_nios2_mpsoc
 CORE_FILE=$CORE_DIR/nios2_mpsoc.sopcinfo
 SOF_FILE=$CORE_DIR/de2_nios2_mpsoc.sof
