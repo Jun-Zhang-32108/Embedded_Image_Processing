@@ -38,8 +38,6 @@ INT8U offset_size_length = 29; // offset_size_length = cropSIZE - 4
 INT8U INT8U_poINT8Uer_size = sizeof(INT8U*);
 INT8U INT8U_size		   = sizeof(INT8U);
 
-// INT8U INT8U_poINT8Uer_size = sizeof(INT8U*);
-// INT8U INT8U_size = sizeof(INT8U);
 
 //Print the 2-D matrix with INT8U datatype
 void printMatrix(INT8U **inputMatrix, INT8U matrix_h, INT8U matrix_w)
@@ -148,13 +146,19 @@ INT8U ** groupV_3(INT8U **inputMatrix, INT8U matrix_row, INT8U matrix_col)
 		{
 			//one algorithm to transform RGB value to grayscale value which is suitable for operation between 16-bit variables
 			//the good balance between speed and precision
-			group[i][j/3] = ((inputMatrix[i][j]*38
-						 +inputMatrix[i][j+1]*75
-						 +inputMatrix[i][j+2]*15)>>7);
+			// group[i][j/3] = ((inputMatrix[i][j]*38
+			// 			 +inputMatrix[i][j+1]*75
+			// 			 +inputMatrix[i][j+2]*15)>>7);
+
+
+			//Another grayscale algorithm, lose some precison but increase the speed
+			group[i][j/3] = ((inputMatrix[i][j]>>2 )
+						 +(inputMatrix[i][j+1]>>1 )
+						 +(inputMatrix[i][j+2]>>3));
 		}		
 	}
-//	printf("Grayed Matrix\n");
-//	printMatrix(group, matrix_row, matrix_col);
+	// printf("Grayed Matrix\n");
+	// printMatrix(group, matrix_row, matrix_col);
 	return group;
 }
 
@@ -186,8 +190,8 @@ INT8U** crop(INT8U startingPoINT8U_x, INT8U startingPoINT8U_y, INT8U** inputMatr
 			group[i][j] = *(startingPoINT8UAddress + img_w*i + j); 
 		}		
 	}
-	//printf("Cropped Matrix\n");
-	//printMatrix(group, cropSIZE, cropSIZE);
+	// printf("Cropped Matrix\n");
+	// printMatrix(group, cropSIZE, cropSIZE);
 	return group;
 }
 
@@ -199,7 +203,7 @@ INT16U ** xcorr2(INT8U **inputMatrix, INT8U xPATTERN[5][5], INT8U inputMatrix_w)
 	INT8U m;
 	INT8U n;
 	INT8U product = 0;
-	INT8U sum;
+	INT16U sum;
 	INT8U output_size_length = offset_size_length;
 	INT8U *startingPoINT8UAddress;
 	INT16U **group = (INT16U**)calloc(output_size_length, sizeof(INT16U*));
@@ -245,10 +249,10 @@ INT16U ** xcorr2(INT8U **inputMatrix, INT8U xPATTERN[5][5], INT8U inputMatrix_w)
 // The inputMatrix here is the xcorred Matrix
 INT8U * posMax(INT16U** inputMatrix)
 {
-	INT8U* output = (INT8U*)calloc(3, sizeof(INT8U));
+	INT16U* output = (INT16U*)calloc(3, sizeof(INT16U));
 	INT8U i;
 	INT8U j;
-	INT8U max = 0;
+	INT16U max = 0;
 	for(i = 0; i<offset_size_length; i++)
 		for(j = 0; j <offset_size_length; j++)
 		{
@@ -290,7 +294,7 @@ INT8U *calcCoord(INT8U *previousPoINT8U, INT8U img_h, INT8U img_w )
 }
 
 //croPoINT8U represents the position of cropped point
-INT8U * objectPos(INT8U cropPoINT8U[2], INT8U *offset)
+INT8U * objectPos(INT8U cropPoINT8U[2], INT16U *offset)
 {
 	INT8U* output = (INT8U*)calloc(2, INT8U_size);
 	if(output == NULL)
@@ -333,7 +337,7 @@ INT8U loop()
 	INT8U *coords;
 	INT8U **croped;
 	INT16U **xcropp2ed;
-	INT8U *position_Max;
+	INT16U *position_Max;
 	INT8U finalResult[sequence_length][2];
     for( counter = 0; counter < sequence_length; counter++)
     {
