@@ -16,7 +16,10 @@
 #include "ascii_gray.h"
 #include "functions.h"
 
-#define DEBUG 1
+#define DEBUG 0
+#define ITERATIONS 100
+char current_iteration = 0;
+
 
 #define HW_TIMER_PERIOD 100 /* 100ms */
 #define OS_OPT_TIME_PERIODIC 1
@@ -202,15 +205,20 @@ void taskGRAYSDF(void* pdata)
 
 		if(counter == 4 )
 		{
-			printf("Right now we finish processing all the images.\n");
-			exit(0);
+			if(DEBUG) {
+				printf("Program finished - debug mode\n");
+				exit(0);
+			} else {
+				counter = 0;
+			}
 		}
-		PERF_RESET(PERFORMANCE_COUNTER_0_BASE);
-		PERF_START_MEASURING (PERFORMANCE_COUNTER_0_BASE);
+
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GRAYSDF);
 
 		/* Measurement here */
-		printf("Task GRAYSDFF\n");
+		if(DEBUG) {
+			printf("Task GRAYSDFF\n");
+		}
 
 		image = image_sequence[counter];
     	img_w = image[0];
@@ -246,10 +254,12 @@ void taskCROPSDF(void* pdata)
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CROPSDF);
 
 		/* Measurement here */
-		printf("Task CROPSDF\n");
+		if(DEBUG) {
+			printf("Task CROPSDF\n");
+		}
 	    croped = crop(coords[0],coords[1],grayed, img_w);
-		free(grayed[0]);
-		free(grayed);
+//		free(grayed[0]);
+//		free(grayed);
 
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CROPSDF);
 
@@ -271,7 +281,9 @@ void taskXCORR2SDF(void* pdata)
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_XCORR2SDF);
 
 		/* Measurement here */
-		printf("Task XCORR2SDF\n");
+		if(DEBUG) {
+			printf("Task XCORR2SDF\n");
+		}
 	   	xcropp2ed = xcorr2(croped, xPATTERN, cropSIZE);
 	   	free(croped[0]);
 	   	free(croped);
@@ -290,15 +302,14 @@ void taskGETOFFSETSDF(void* pdata)
 	{
 		OSSemPend(TaskGETOFFSETSDFSem, 0, &err);
 
-		//PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
 
 		/* Measurement here */
-		printf("Task GETOFFSETSDF\n");
+		if(DEBUG) {
+			printf("Task GETOFFSETSDF\n");
+		}
 	    position_Max = posMax(xcropp2ed);
 	    free(xcropp2ed[0]);
 	    free(xcropp2ed);
-
-//		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_GETOFFSETSDF);
 
 		OSSemPost(TaskCALCPOSSDFSem);
 	}
@@ -316,28 +327,49 @@ void taskCALCPOSSDF(void* pdata)
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
 
 		/* Measurement here */
-		printf("Task CALCPOSSDF\n");
+		if(DEBUG) {
+			printf("Task CALCPOSSDF\n");
+		}
 	    detected = objectPos(coords,position_Max);
 	    free(coords);
 	    free(position_Max);
-	    printf("Test image %d : %d , %d \n\n",counter,detected[0],detected[1]);
+	    if(DEBUG) {
+	    	printf("printMatrix\n");
+//	    	printMatrix(grayed[0], image_sequence[counter][0], image_sequence[counter][1]);
+//	    	printAscii(grayed[0], image_sequence[counter][0], image_sequence[counter][1]);
+//	    	printf("------------------------------------\n\n");
+//	    	printAsciiHidden(grayed[0], image_sequence[counter][0], image_sequence[counter][1],
+//	    			detected[0], detected[1], 5, 0);
+	    }
+	    printf("Test image %d : %d , %d \n\n", counter, detected[0], detected[1]);
+	    free(grayed[0]);
+		free(grayed);
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
 
-		PERF_STOP_MEASURING (PERFORMANCE_COUNTER_0_BASE);
+		if(!DEBUG) {
+			current_iteration++;
+			if(current_iteration >= ITERATIONS) {
+				PERF_STOP_MEASURING (PERFORMANCE_COUNTER_0_BASE);
 				/* Print report */
 				perf_print_formatted_report
-				(PERFORMANCE_COUNTER_0_BASE,
-				ALT_CPU_FREQ,        // defined in "system.h"
-				5,                   // How many sections to print
-				"graySDF",
-				"cropSDF",
-				"xcorr2SDF",
-//				"getOffsetSDF",
-				"calcCoordSDF",
-				"calcPosSDF"
-				);
-
+					(PERFORMANCE_COUNTER_0_BASE,
+					ALT_CPU_FREQ,        // defined in "system.h"
+					5,                   // How many sections to print
+					"graySDF",
+					"cropSDF",
+					"xcorr2SDF",
+					"calcCoordSDF",
+					"calcPosSDF"
+					);
+				printf("Program finished - performance mode");
+				//stop the program by causing an artificial deadlock
+				exit(0);
+			}
+		}
 		OSSemPost(TaskDELAYSDFSem);
+		if(!DEBUG) {
+			OSSemPost(Task1TmrSem);
+		}
 	}
 }
 
@@ -346,19 +378,6 @@ void taskCALCPOSSDF(void* pdata)
 void taskDELAYSDF(void* pdata)
 {
 	INT8U err;
-	/*void *pmsg;
-	INT8U Init_StartingPoints[2] = {99,98};
-	err = OSQPost(MQ_DELAYSDF, (void *)&Init_StartingPoints[0]);
-	if(err != OS_ERR_NONE)
-	{
-		printf("Error! %s\n", err);
-	}
-	err = OSQPost(MQ_DELAYSDF, (void *)&Init_StartingPoints[1]);
-	if(err != OS_ERR_NONE)
-	{
-		printf("Error! %s\n", err);
-	}*/
-
 	INT8U *intial_point = (INT8U*)calloc(2, INT8U_size);
 	if(intial_point == NULL)
 	{
@@ -376,7 +395,6 @@ void taskDELAYSDF(void* pdata)
 		OSSemPend(TaskDELAYSDFSem, 0, &err);
 
 		previous_point = detected;
-
 
 		OSSemPost(TaskCALCCOORDSDFSem);
 
@@ -397,7 +415,9 @@ void taskCALCCOORDSDF(void* pdata)
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
 
 		/* Measurement here */
-		printf("Task CALCCOORDSDF\n");
+		if(DEBUG) {
+			printf("Task CALCCOORDSDF\n");
+		}
 	    coords = calcCoord(previous_point, img_h, img_w );
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
 
@@ -457,7 +477,9 @@ void StartTask(void* pdata)
     */
 
    //start Task1 Timer
-   OSTmrStart(Task1Tmr, &err);
+   if(DEBUG) {
+	   OSTmrStart(Task1Tmr, &err);
+   }
 
    if (DEBUG) {
     if (err == OS_ERR_NONE) { //if start successful
@@ -471,7 +493,11 @@ void StartTask(void* pdata)
    * Creation of Kernel Objects
    */
 
-  Task1TmrSem 			= OSSemCreate(0);
+  if (!DEBUG) {
+	  Task1TmrSem 			= OSSemCreate(1);
+  } else {
+	  Task1TmrSem 			= OSSemCreate(0);
+  }
   TaskGRAYSDFSem 		= OSSemCreate(0);
   TaskCROPSDFSem 		= OSSemCreate(0);
   TaskXCORR2SDFSem 		= OSSemCreate(0);
@@ -637,6 +663,9 @@ void StartTask(void* pdata)
    }
 
   printf("All Tasks and Kernel Objects generated!\n");
+
+  PERF_RESET(PERFORMANCE_COUNTER_0_BASE);
+  PERF_START_MEASURING (PERFORMANCE_COUNTER_0_BASE);
 
   /* Task deletes itself */
 
