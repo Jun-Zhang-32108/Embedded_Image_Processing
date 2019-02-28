@@ -32,8 +32,8 @@
 
 //Define two new datatypes to save memory. Since the maximum grayscale value is 255, INT8U (8 bits) should be big enough to hold most variables.
 //Only when we call xcorr2 functions the dot product value is possible to be greater than 255. So we use INT16U to hold that value.  
-typedef unsigned char INT8U;
-typedef unsigned short INT16U;
+typedef alt_u8 INT8U;
+typedef alt_u16 INT16U;
 
 #define dSPAN  15
 #define cropSIZE  36
@@ -188,7 +188,7 @@ INT8U* crop(INT8U startingPoINT8U_x, INT8U startingPoINT8U_y, INT8U* inputMatrix
 {
 	INT8U i;
 	INT8U j;
-	INT8U* staringPointAddress_forRow;
+	int* staringPointAddress_forRow;
 	INT8U* startingPoINT8UAddress = inputMatrix+img_w * startingPoINT8U_x + startingPoINT8U_y*3;
 	// printf("Staring Point Address in memory: %d\n", startingPoINT8UAddress); 
 	int** group = (int**)calloc(cropSIZE, sizeof(int*));
@@ -206,11 +206,11 @@ INT8U* crop(INT8U startingPoINT8U_x, INT8U startingPoINT8U_y, INT8U* inputMatrix
 	for ( i = 0; i < cropSIZE; i++)
 	{
 		group[i] = group[0] + i*cropSIZE*3/4;
-		staringPointAddress_forRow = startingPoINT8UAddress + img_w*i;
+		staringPointAddress_forRow = (int*)(startingPoINT8UAddress + img_w*i);
 		for( j = 0; j < cropSIZE*3/4; j++)
 		{
 			//group[i][j] = *(startingPoINT8UAddress + img_w*i + j); 
-			group[i][j]   = *((int*)(staringPointAddress_forRow+j*4)); 
+			group[i][j]   = *staringPointAddress_forRow++; 
 			// group[i][j+1] = *(staringPointAddress_forRow + j+1); 
 			// group[i][j+2] = *(staringPointAddress_forRow + j+2); 
 
