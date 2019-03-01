@@ -6,10 +6,12 @@
 #include <altera_avalon_mutex.h>
 #include "altera_avalon_performance_counter.h"
 #include "images.h"
+
 #include "alt_types.h"
 //#define SECTION_WRITEIMAGETOSHAREDMEMORY 	1
 
 //#define SECTION_OTHER_COMPUTING 		4
+
 
 
 
@@ -32,7 +34,6 @@ typedef alt_u16 INT16U;
 #define offset_size_length 32
 #define cropSIZE_int_RGB 27  // = 36*3/4 
 
-
 extern void delay (int millisec);
 int count = 0;
 //int current_image = 0;
@@ -41,6 +42,10 @@ unsigned char* shared = (unsigned char*) SHARED_ONCHIP_BASE;
 #define results_offset 4000 //results from other CPUs are stored at a place starting from shared+4000
 #define DEBUG 1
 
+#ifndef DEBUG
+#include <stdio.h>
+#endif
+#include "ascii_gray.h"
 
 int main()
 {
@@ -134,8 +139,9 @@ int main()
 	int* staringPointAddress_forRow;
 	INT8U i;
 	INT8U j;
-
-	//delay(100);		
+		
+	PERF_RESET(PERFORMANCE_COUNTER_0_BASE);
+	PERF_START_MEASURING (PERFORMANCE_COUNTER_0_BASE);
 	while (1) {
 
 		if(count % 4 == 0)
@@ -145,7 +151,14 @@ int main()
 			detected[0] = 0;
 			detected[1] = 0;
 			detected[2] = 0;
-		 	if( count == 400)
+			if( DEBUG && count == 4) {
+				altera_avalon_mutex_lock(mutex_1, 1);
+				altera_avalon_mutex_lock(mutex_2, 1);
+				altera_avalon_mutex_lock(mutex_3, 1);
+				altera_avalon_mutex_lock(mutex_4, 1);
+				exit(0);
+			} else
+		 	if( count == 100)
 		 	{
 			while(1)
 			{
@@ -153,6 +166,19 @@ int main()
 				altera_avalon_mutex_lock(mutex_2, 1);
 				altera_avalon_mutex_lock(mutex_3, 1);
 				altera_avalon_mutex_lock(mutex_4, 1);
+			    PERF_STOP_MEASURING (PERFORMANCE_COUNTER_0_BASE);
+
+			    perf_print_formatted_report
+					(PERFORMANCE_COUNTER_0_BASE,
+					ALT_CPU_FREQ,        // defined in "system.h"
+					5,                   // How many sections to print
+					"Slave CPU Workload",
+					"Write Image",
+					"Read Image",
+					"Write Result",
+					"Read Results"
+					);
+				exit(0);
 			}		 		
 		 	}
 
@@ -160,8 +186,7 @@ int main()
 
 		image = image_sequence[count % 4] + 4;
 
-		PERF_RESET(PERFORMANCE_COUNTER_0_BASE);
-		PERF_START_MEASURING (PERFORMANCE_COUNTER_0_BASE);
+		
 		
 		
 		/*
@@ -351,26 +376,20 @@ int main()
 		count ++;
 		// alt_printf("image number %x processed\n", count);
 		
+		if(DEBUG) {
+			printAscii(image, image_sequence[count % 4][0], image_sequence[count % 4][1]);
+			alt_printf("------------------------------------\n\n");
+			printAsciiHidden(image, image_sequence[count % 4][0], image_sequence[count % 4][1], detected[0], detected[1], 5, 0);
+		}
+		
+//			    	printf("------------------------------------\n\n");
+//			    	printAsciiHidden(grayed[0], image_sequence[counter][0], image_sequence[counter][1],
+//			    			detected[0], detected[1], 5, 0);
+//			    }
 		
 		
-	    PERF_STOP_MEASURING (PERFORMANCE_COUNTER_0_BASE);
 
-	    perf_print_formatted_report
-			(PERFORMANCE_COUNTER_0_BASE,
-			ALT_CPU_FREQ,        // defined in "system.h"
-			5,                   // How many sections to print
-			"Slave CPU Workload",
-			"Write Image",
-			"Read Image",
-			"Write Result",
-			"Read Results"
-			);
 	    
-#define SECTION_DISTRIBUTED_PROCESSING 			1
-#define SECTION_WRITE_IMAGE_TO_SHARED_MEMORY	2
-#define SECTION_READ_IMAGE_FROM_SHARED_MEMORY	3
-#define SECTION_WRITE_RESULT_TO_SHARED_MEMORY	4
-#define SECTION_READ_RESULTS					5
 	    //delay(500);	//nice wait
   }
   return 0;
