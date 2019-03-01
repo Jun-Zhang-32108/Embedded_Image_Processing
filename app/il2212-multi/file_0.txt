@@ -530,3 +530,6 @@ Count:	Final result: 3: 3, 31, 1a
 
 
 
+
+
+nios2-terminal: exiting due to I/O error communicating with target
