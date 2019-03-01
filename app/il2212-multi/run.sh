@@ -14,6 +14,11 @@ rm -rf *.txt
 rm -rf *.elf
 rm -rf *.objdump
 rm -rf *.map
+rm -rf test0.txt
+rm -rf test1.txt
+rm -rf test2.txt
+rm -rf test3.txt
+rm -rf test4.txt
 
 CORE_DIR=../../hardware/de2_nios2_mpsoc
 CORE_FILE=$CORE_DIR/nios2_mpsoc.sopcinfo
@@ -138,7 +143,7 @@ nios2-configure-sof $SOF_FILE
 for i in `seq 0 $NODES`; do
     echo ""
     echo "Start NiosII terminal ..."
-    xterm -title "${CPU}_$i" -e "nios2-terminal -i $i" &
+    xterm -title "${CPU}_$i" -e "nios2-terminal -i $i >> file_${i}.txt" &
 done
 
 for i in `seq 0 $NODES`; do

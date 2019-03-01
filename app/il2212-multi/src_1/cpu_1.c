@@ -15,6 +15,7 @@
 extern void delay (int millisec);
 
 
+#define results_offset 4000 //results from other CPUs are stored at a place starting from shared+4000
 typedef unsigned char INT8U;
 typedef unsigned short INT16U;
 
@@ -48,6 +49,32 @@ void printMatrix(INT8U *inputMatrix, INT8U matrix_h, INT8U matrix_w)
 	alt_putstr("\n");
 }
 
+//Print the 2-D matrix with INT8U datatype
+void printMatrix_INT16U(INT16U *inputMatrix, INT8U matrix_h, INT8U matrix_w)
+{
+	INT8U i;
+	INT8U j;
+	alt_putstr("============================================================\n");
+	alt_putstr("============================================================\n");
+	alt_putstr("\n");
+	alt_putstr("[");
+	for(i = 0; i < matrix_h; i++)
+	{
+		alt_putstr("[	");
+		for(j = 0; j < matrix_w; j++)
+		{
+			alt_printf("  %x	",*(inputMatrix+matrix_w*i+j));
+		    //alt_printf("  %d	",inputMatrix[i][j]);
+		}
+		alt_putstr("]");
+		alt_putstr("\n");
+	}
+	alt_putstr("]");
+	alt_putstr("============================================================\n");
+	alt_putstr("============================================================\n");
+	alt_putstr("\n");
+}
+
 
 int main()
 {	
@@ -57,26 +84,39 @@ int main()
 	INT8U grayed[432];		  // = 12*36
 	INT16U xcropp2ed[offset_size_height*offset_size_length];
 	int* writePointer;
-	INT16U* writeBackPointer = (INT16U*)(image_piece + 4000);
+	INT16U* writeBackPointer;
 	INT8U *row_add;
 	INT8U *startingPoINT8UAddress;
 	INT16U output[3];
 	INT16U max=0;
 
 
-	alt_putstr("Hello cpu_1!\n");
+	// alt_putstr("Hello cpu_1!\n");
 	alt_mutex_dev* mutex_1 = altera_avalon_mutex_open( "/dev/mutex_1" );
 	if(mutex_1) {
 		alt_putstr("cpu_1 found mutex_1 handle\n");
 	}
 	
+
+	/*
+	 * NEW PART - START FROM THE SAME LINE
+	 * */
+	
+	altera_avalon_mutex_lock(mutex_1, 1);
+	delay(1);
+	altera_avalon_mutex_unlock(mutex_1);
+	delay(10);
+	
+	/*
+	 * END OF NEW PART - ALL CPUS ARE ON THE SAME PAGE
+	 * */
 	// image piece is stored from shared ~ shared + 12*36*3 -1
 	int* readAddress; 
 
 	while (1) {
-		if(!altera_avalon_mutex_is_mine(mutex_1)) {
+		//if(!altera_avalon_mutex_is_mine(mutex_1)) {
 			altera_avalon_mutex_lock(mutex_1, 1);
-			alt_putstr("cpu_1 reading image\n");
+			// alt_putstr("cpu_1 reading image\n");
 			
 			/*
 			* TODO: read image from shared memory here
@@ -102,17 +142,17 @@ int main()
 				}
 			}
 
-			alt_printf("cpu_1 read %x\n", *image_piece);
-			printMatrix(image_piece,image_piece_h, cropSIZE*3);
+			// alt_printf("cpu_1 read %x\n", *image_piece);
+			//printMatrix(image_piece,image_piece_h, cropSIZE*3);
 			//signal read completion
 			altera_avalon_mutex_unlock(mutex_1);
-			delay(1);
-			altera_avalon_mutex_lock(mutex_1, 1);
+			//delay(1);
+			//altera_avalon_mutex_lock(mutex_1, 1);
 			
 			/*
 			* TODO: put grayscaling here
 			* */
-			alt_putstr("cpu_1 grayscaling\n");
+			// alt_putstr("cpu_1 grayscaling\n");
 			//delay(100); 	//simulating read time
 			
 			for ( i = 0; i < image_piece_h; i++)
@@ -172,7 +212,7 @@ int main()
 			/*
 			* TODO: xcorr2 here
 			* */
-			alt_putstr("cpu_1 xcorr2'ing image\n");
+			//alt_putstr("cpu_1 xcorr2'ing image\n");
 			//delay(100); 	//simulate xcorr time
 			
 			for ( i = 0; i < offset_size_height; i++)
@@ -252,11 +292,13 @@ int main()
 				}		
 			}
 
+			//printMatrix_INT16U(xcropp2ed,offset_size_height, offset_size_length);
 
+			max = 0;
 			/*
 			* TODO: offsetting here
 			* */
-			alt_putstr("cpu_1 offsetting\n");
+			// alt_putstr("cpu_1 offsetting\n");
 			//delay(10);	//simulating offsetting time
 			
 
@@ -284,10 +326,10 @@ int main()
 			
 			
 			//signal computation completion
-			altera_avalon_mutex_unlock(mutex_1);  
-			delay(1);
+			//altera_avalon_mutex_unlock(mutex_1);  
+			//delay(1);
 			//wait until granted access to write to shared memory
-			altera_avalon_mutex_lock(mutex_1, 1);
+			
 			
 			
 			
@@ -295,23 +337,25 @@ int main()
 			/*
 			* TODO: write result to shared memory here
 			* */
-			alt_putstr("cpu_1 writing result\n");
+			// alt_putstr("cpu_1 writing result\n");
 			//delay(100); 	//simulating write time
 //			*shared = 21;
-			*writeBackPointer 		= output[0]; 
+			altera_avalon_mutex_lock(mutex_1, 1);
+			writeBackPointer = (INT16U*)(shared + results_offset);
+			*(writeBackPointer) 	= output[0]; 
 			*(writeBackPointer + 1) = output[1];
 			*(writeBackPointer + 2)	= output[2]; 
-			alt_printf("value: %x\n",output[0]);
-			alt_printf("value: %x\n",output[1]);
-			alt_printf("value: %x\n",output[2]);
+			// alt_printf("value: %x\n",output[0]);
+			// alt_printf("value: %x\n",output[1]);
+			// alt_printf("value: %x\n",output[2]);
 			//signal write completion
 			altera_avalon_mutex_unlock(mutex_1);
-		} else {
-			alt_putstr("ERROR DETECTED: cpu_1 not supposed to own mutex at begin of loop\n");
-			altera_avalon_mutex_unlock(mutex_1);
-		}
+		//} else {
+		//	alt_putstr("ERROR DETECTED: cpu_1 not supposed to own mutex at begin of loop\n");
+		//	altera_avalon_mutex_unlock(mutex_1);
+		//}
 		count++;
-		alt_printf("cpu_1 count = %x\n", count);
+		// alt_printf("cpu_1 count = %x\n", count);
 	}
 	return 0;
 }

@@ -34,7 +34,7 @@ typedef alt_u16 INT16U;
 
 
 extern void delay (int millisec);
-INT8U count = 0;
+int count = 0;
 //int current_image = 0;
 unsigned char* shared = (unsigned char*) SHARED_ONCHIP_BASE;
 
@@ -73,7 +73,7 @@ unsigned char* shared = (unsigned char*) SHARED_ONCHIP_BASE;
 
 int main()
 {
-	alt_putstr("Hello cpu_0!\n");
+	// alt_putstr("Hello cpu_0!\n");
 
 	alt_mutex_dev* mutex_0 = altera_avalon_mutex_open( "/dev/mutex_0" );
 	alt_mutex_dev* mutex_1 = altera_avalon_mutex_open( "/dev/mutex_1" );
@@ -82,11 +82,71 @@ int main()
 	alt_mutex_dev* mutex_4 = altera_avalon_mutex_open( "/dev/mutex_4" );
 	
 	
-	altera_avalon_mutex_trylock(mutex_0, 1);
+/*
+	 * NEW PART - START FROM THE SAME LINE
+	 * */
+	
+	// alt_putstr("cpu_0 is waiting for all CPUs to wake up\n");
+	
+	char cpu1_sleeping = 1;
+	char cpu2_sleeping = 1;
+	char cpu3_sleeping = 1;
+	char cpu4_sleeping = 1;
+	
+	
 	altera_avalon_mutex_trylock(mutex_1, 1);
 	altera_avalon_mutex_trylock(mutex_2, 1);
 	altera_avalon_mutex_trylock(mutex_3, 1);
 	altera_avalon_mutex_trylock(mutex_4, 1);
+	
+	while(cpu1_sleeping || cpu2_sleeping || cpu3_sleeping || cpu4_sleeping) {
+		if(cpu1_sleeping) {
+			altera_avalon_mutex_trylock(mutex_1, 1);
+			cpu1_sleeping = altera_avalon_mutex_is_mine(mutex_1);
+			altera_avalon_mutex_unlock(mutex_1);
+			if(!cpu1_sleeping) {//just woke up
+				alt_putstr("CPU 1 awake\n");
+				altera_avalon_mutex_lock(mutex_1, 1);
+			}
+		}
+		if(cpu2_sleeping) {
+			altera_avalon_mutex_trylock(mutex_2, 1);
+			cpu2_sleeping = altera_avalon_mutex_is_mine(mutex_2);
+			altera_avalon_mutex_unlock(mutex_2);
+			if(!cpu2_sleeping) {//just woke up
+				alt_putstr("CPU 2 awake\n");
+				altera_avalon_mutex_lock(mutex_2, 1);
+			}
+		}
+		if(cpu3_sleeping) {
+			altera_avalon_mutex_trylock(mutex_3, 1);
+			cpu3_sleeping = altera_avalon_mutex_is_mine(mutex_3);
+			altera_avalon_mutex_unlock(mutex_3);
+			if(!cpu3_sleeping) {//just woke up
+				alt_putstr("CPU 3 awake\n");
+				altera_avalon_mutex_lock(mutex_3, 1);
+			}
+		}
+		if(cpu4_sleeping) {
+			altera_avalon_mutex_trylock(mutex_4, 1);
+			cpu4_sleeping = altera_avalon_mutex_is_mine(mutex_4);
+			altera_avalon_mutex_unlock(mutex_4);
+			if(!cpu4_sleeping) {//just woke up
+				alt_putstr("CPU 4 awake\n");
+				altera_avalon_mutex_lock(mutex_4, 1);
+			}
+		}
+	}
+	
+	// alt_putstr("All CPUs are awake\n");
+	
+	
+	
+	
+	
+	/*
+	 * END OF NEW PART - ALL CPUS ARE ON THE SAME PAGE
+	 * */
 	
 	
 	
@@ -106,16 +166,30 @@ int main()
 	INT8U i;
 	INT8U j;
 
-	delay(100);		
+	//delay(100);		
 	while (1) {
 
-		if(count == 1)
+		if(count % 4 == 0)
 		{
-			alt_putstr("all the four images has been processed!\n");
-			return 0;
+			//alt_putstr("all the four images has been processed!\n");
+
+			detected[0] = 0;
+			detected[1] = 0;
+			detected[2] = 0;
+		 	if( count == 400)
+		 	{
+			while(1)
+			{
+				altera_avalon_mutex_lock(mutex_1, 1);
+				altera_avalon_mutex_lock(mutex_2, 1);
+				altera_avalon_mutex_lock(mutex_3, 1);
+				altera_avalon_mutex_lock(mutex_4, 1);
+			}		 		
+		 	}
+
 		}
 
-		image = image_sequence[count] + 4;
+		image = image_sequence[count % 4] + 4;
 
 		PERF_RESET(PERFORMANCE_COUNTER_0_BASE);
 		PERF_START_MEASURING (PERFORMANCE_COUNTER_0_BASE);
@@ -124,7 +198,7 @@ int main()
 		/*
 		 * TODO: calculating the cropping point, cropping function and transmit the image to shared onship memory
 		 * */
-		alt_putstr("cpu_0 cropping & writing image to memory\n");
+		// alt_putstr("cpu_0 cropping & writing image to memory\n");
 
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_WRITE_IMAGE_TO_SHARED_MEMORY);
 		if(detected[0] <= dSPAN)
@@ -140,7 +214,7 @@ int main()
 		else
 			coords[1] = detected[1] - dSPAN ;
 		
-		//alt_putstr("Coords point: %x, %x . \n",coords[0],coords[1]);
+		// alt_printf("Coords point: %x, %x . \n",coords[0],coords[1]);
 		
 		
 		startingPoINT8UAddress = image + img_w_0 * coords[0] + coords[1]*3; 
@@ -178,9 +252,9 @@ int main()
 		 * schedule reading from memory
 		 * */
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_READ_IMAGE_FROM_SHARED_MEMORY);
-		alt_putstr("cpu_0 scheduling reading\n");
+		// alt_putstr("cpu_0 scheduling reading\n");
 		if(altera_avalon_mutex_is_mine(mutex_1)) {
-			alt_putstr("cpu_0 giving control to cpu 1\n");
+			// alt_putstr("cpu_0 giving control to cpu 1\n");
 			altera_avalon_mutex_unlock(mutex_1);
 			delay(1);
 			altera_avalon_mutex_lock(mutex_1, 1);
@@ -188,7 +262,7 @@ int main()
 			alt_putstr("cpu_0 cant open mutex 1 because does not own mutex 1\n");
 		}
 		if(altera_avalon_mutex_is_mine(mutex_2)) {
-			alt_putstr("cpu_0 giving control to cpu 2\n");
+			// alt_putstr("cpu_0 giving control to cpu 2\n");
 			altera_avalon_mutex_unlock(mutex_2);
 			delay(1);
 			altera_avalon_mutex_lock(mutex_2, 1);
@@ -196,7 +270,7 @@ int main()
 			alt_putstr("cpu_0 cant open mutex 2 because does not own mutex 2\n");
 		}
 		if(altera_avalon_mutex_is_mine(mutex_3)) {
-			alt_putstr("cpu_0 giving control to cpu 3\n");
+			// alt_putstr("cpu_0 giving control to cpu 3\n");
 			altera_avalon_mutex_unlock(mutex_3);
 			delay(1);
 			altera_avalon_mutex_lock(mutex_3, 1);
@@ -204,7 +278,7 @@ int main()
 			alt_putstr("cpu_0 cant open mutex 3 because does not own mutex 3\n");
 		}
 		if(altera_avalon_mutex_is_mine(mutex_4)) {
-			alt_putstr("cpu_0 giving control to cpu 4\n");
+			// alt_putstr("cpu_0 giving control to cpu 4\n");
 			altera_avalon_mutex_unlock(mutex_4);
 			delay(1);
 			altera_avalon_mutex_lock(mutex_4, 1);
@@ -220,40 +294,40 @@ int main()
 		 * with all the results later anyways.
 		 * */
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_DISTRIBUTED_COMPUTING);
-		alt_putstr("cpu_0 grants permission to compute to all cpus\n");
-		altera_avalon_mutex_unlock(mutex_1);
-		altera_avalon_mutex_unlock(mutex_2);
-		altera_avalon_mutex_unlock(mutex_3);
-		altera_avalon_mutex_unlock(mutex_4);
+		//alt_putstr("cpu_0 grants permission to compute to all cpus\n");
+		// altera_avalon_mutex_unlock(mutex_1);
+		// altera_avalon_mutex_unlock(mutex_2);
+		// altera_avalon_mutex_unlock(mutex_3);
+		// altera_avalon_mutex_unlock(mutex_4);
 		
 		
 		/*
 		 * wait until other cpu's finish computing
 		 * */
-		alt_putstr("cpu_0 waiting for other cpus to finish computing\n");
+		//alt_putstr("cpu_0 waiting for other cpus to finish computing\n");
 		
-		while(
-			!altera_avalon_mutex_is_mine(mutex_1) ||
-			!altera_avalon_mutex_is_mine(mutex_2) ||
-			!altera_avalon_mutex_is_mine(mutex_3) ||
-			!altera_avalon_mutex_is_mine(mutex_4)
-			)
-			{
-				altera_avalon_mutex_trylock(mutex_1, 1);
-				altera_avalon_mutex_trylock(mutex_2, 1);
-				altera_avalon_mutex_trylock(mutex_3, 1);
-				altera_avalon_mutex_trylock(mutex_4, 1);
-			}
-		alt_putstr("other cpu's have finished computing\n");
+		// while(
+		// 	!altera_avalon_mutex_is_mine(mutex_1) ||
+		// 	!altera_avalon_mutex_is_mine(mutex_2) ||
+		// 	!altera_avalon_mutex_is_mine(mutex_3) ||
+		// 	!altera_avalon_mutex_is_mine(mutex_4)
+		// 	)
+		// 	{
+		// 		altera_avalon_mutex_trylock(mutex_1, 1);
+		// 		altera_avalon_mutex_trylock(mutex_2, 1);
+		// 		altera_avalon_mutex_trylock(mutex_3, 1);
+		// 		altera_avalon_mutex_trylock(mutex_4, 1);
+		// 	}
+		//alt_putstr("other cpu's have finished computing\n");
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_DISTRIBUTED_COMPUTING);
 		
 		/*
 		 * schedule writing result to memory
 		 * */
-		alt_putstr("cpu_0 scheduling result writing from other cpu's\n");
+		// alt_putstr("cpu_0 scheduling result writing from other cpu's\n");
 		
 		if(altera_avalon_mutex_is_mine(mutex_1)) {
-			alt_putstr("cpu_0 giving control to cpu 1\n");
+			// alt_putstr("cpu_0 giving control to cpu 1\n");
 			altera_avalon_mutex_unlock(mutex_1);
 			delay(1);
 			altera_avalon_mutex_lock(mutex_1, 1);
@@ -262,7 +336,7 @@ int main()
 		}
 		
 		if(altera_avalon_mutex_is_mine(mutex_2)) {
-			alt_putstr("cpu_0 giving control to cpu 2\n");
+			// alt_putstr("cpu_0 giving control to cpu 2\n");
 			altera_avalon_mutex_unlock(mutex_2);
 			delay(1);
 			altera_avalon_mutex_lock(mutex_2, 1);
@@ -271,7 +345,7 @@ int main()
 		}
 		
 		if(altera_avalon_mutex_is_mine(mutex_3)) {
-			alt_putstr("cpu_0 giving control to cpu 3\n");
+			// alt_putstr("cpu_0 giving control to cpu 3\n");
 			altera_avalon_mutex_unlock(mutex_3);
 			delay(1);
 			altera_avalon_mutex_lock(mutex_3, 1);
@@ -280,7 +354,7 @@ int main()
 		}
 		
 		if(altera_avalon_mutex_is_mine(mutex_4)) {
-			alt_putstr("cpu_0 giving control to cpu 4\n");
+			// alt_putstr("cpu_0 giving control to cpu 4\n");
 			altera_avalon_mutex_unlock(mutex_4);
 			delay(1);
 			altera_avalon_mutex_lock(mutex_4, 1);
@@ -289,14 +363,14 @@ int main()
 		}
 		
 		
-		alt_putstr("results written\n");
-		delay(1);	
+		// alt_putstr("results written\n");
+		// delay(1);	
 		
 		/*
 		 * TODO: 
 		 * */
 		
-		alt_putstr("cpu_0 reading results from memory and compare them in order to get the final result\n");
+		// alt_putstr("cpu_0 reading results from memory and compare them in order to get the final result\n");
 		//delay(100);	//simulating memory access
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_READ_RESULTS);
 		// results are stored at a consecutive memory space starting from shared + 4000, the order is x1,y1,value1, x2, y2, value2 ... 
@@ -308,9 +382,9 @@ int main()
 		detected[2]		 = valueFromCPUs[0];
 		detected[0]		 = *(readPointer );
 		detected[1]		 = *(readPointer + 1);
-		alt_printf("cpu_0 reading results from CPU1: %x \n",detected[0]);
-		alt_printf("cpu_0 reading results from CPU1: %x \n",detected[1]);
-		alt_printf("cpu_0 reading results from CPU1: %x \n",detected[2]);
+		//alt_printf("cpu_0 reading results from CPU1: %x \n",detected[0]);
+		// alt_printf("cpu_0 reading results from CPU1: %x \n",detected[1]);
+		// alt_printf("cpu_0 reading results from CPU1: %x \n",detected[2]);
 		valueFromCPUs[1] = *(readPointer + 5);
 		if(detected[2] < valueFromCPUs[1])
 			{
@@ -341,8 +415,8 @@ int main()
 		detected[1] = detected[1] + coords[1] + 2;
 
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_READ_RESULTS);
-		alt_printf("cpu_0 read %x\n", *shared);
-		alt_printf("Final result: %x, %x, %x\n", detected[0],detected[1],detected[2]);
+		// alt_printf("cpu_0 read %x\n", *shared);
+		alt_printf("Count:	Final result: %x: %x, %x, %x\n", count, (count % 4),detected[0],detected[1],detected[2]);
 		
 
 		
@@ -360,7 +434,7 @@ int main()
 		// delay(10); //simulating coordinates time
 		
 		count ++;
-		alt_printf("image number %x processed\n", count);
+		// alt_printf("image number %x processed\n", count);
 		
 		
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_IMAGE_PROCESSING);
@@ -377,7 +451,7 @@ int main()
 			"read results"
 			);
 	    
-	    delay(500);	//nice wait
+	    //delay(500);	//nice wait
   }
   return 0;
 }
