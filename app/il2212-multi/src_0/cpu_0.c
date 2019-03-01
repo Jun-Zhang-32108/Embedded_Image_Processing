@@ -1,6 +1,6 @@
-#include <stdio.h>
+//#include <stdio.h>
 #include "system.h"
-#include "altera_avalon_pio_regs.h"
+//#include "altera_avalon_pio_regs.h"
 //#include "io.h"
 #include "sys/alt_stdio.h"
 #include <altera_avalon_mutex.h>
@@ -13,10 +13,10 @@
 
 
 
-#define SECTION_IMAGE_PROCESSING 				1
+#define SECTION_DISTRIBUTED_PROCESSING 			1
 #define SECTION_WRITE_IMAGE_TO_SHARED_MEMORY	2
 #define SECTION_READ_IMAGE_FROM_SHARED_MEMORY	3
-#define SECTION_DISTRIBUTED_COMPUTING			4
+#define SECTION_WRITE_RESULT_TO_SHARED_MEMORY	4
 #define SECTION_READ_RESULTS					5
 
 typedef alt_u8 INT8U;
@@ -42,35 +42,6 @@ unsigned char* shared = (unsigned char*) SHARED_ONCHIP_BASE;
 #define DEBUG 1
 
 
-
-
-/*
- * Example function for copying a p3 image from sram to the shared on-chip mempry
- */
-// void sram2sm_p3(unsigned char* base)
-// {
-// 	int x, y;
-// 	unsigned char* shared;
-
-// 	shared = (unsigned char*) SHARED_ONCHIP_BASE;
-
-// 	int size_x = *base++;
-// 	int size_y = *base++;
-// 	int max_col= *base++;
-// 	*shared++  = size_x;
-// 	*shared++  = size_y;
-// 	*shared++  = max_col;
-// 	alt_printf("The image is: %d x %d!! \n", size_x, size_y);
-// 	for(y = 0; y < size_y; y++)
-// 	for(x = 0; x < size_x; x++)
-// 	{
-// 		*shared++ = *base++; 	// R
-// 		*shared++ = *base++;	// G
-// 		*shared++ = *base++;	// B
-// 	}
-// }
-
-
 int main()
 {
 	// alt_putstr("Hello cpu_0!\n");
@@ -82,8 +53,8 @@ int main()
 	alt_mutex_dev* mutex_4 = altera_avalon_mutex_open( "/dev/mutex_4" );
 	
 	
-/*
-	 * NEW PART - START FROM THE SAME LINE
+	/*
+	 * Handshaking
 	 * */
 	
 	// alt_putstr("cpu_0 is waiting for all CPUs to wake up\n");
@@ -139,14 +110,12 @@ int main()
 	}
 	
 	// alt_putstr("All CPUs are awake\n");
-	
-	
-	
-	
-	
 	/*
-	 * END OF NEW PART - ALL CPUS ARE ON THE SAME PAGE
+	 * Handshake finished
 	 * */
+	
+	
+	
 	
 	
 	
@@ -193,12 +162,11 @@ int main()
 
 		PERF_RESET(PERFORMANCE_COUNTER_0_BASE);
 		PERF_START_MEASURING (PERFORMANCE_COUNTER_0_BASE);
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_IMAGE_PROCESSING);
+		
 		
 		/*
-		 * TODO: calculating the cropping point, cropping function and transmit the image to shared onship memory
+		 * calculating the cropping point, cropping function and transmit the image to shared onship memory
 		 * */
-		// alt_putstr("cpu_0 cropping & writing image to memory\n");
 
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_WRITE_IMAGE_TO_SHARED_MEMORY);
 		if(detected[0] <= dSPAN)
@@ -213,10 +181,7 @@ int main()
 			coords[1] = img_w - cropSIZE;
 		else
 			coords[1] = detected[1] - dSPAN ;
-		
-		// alt_printf("Coords point: %x, %x . \n",coords[0],coords[1]);
-		
-		
+				
 		startingPoINT8UAddress = image + img_w_0 * coords[0] + coords[1]*3; 
 		writePointer = (int*)shared - cropSIZE_int_RGB;
 		for ( i = 0; i < cropSIZE; i++)
@@ -225,7 +190,6 @@ int main()
 			writePointer += cropSIZE_int_RGB;
 			for( j = 0; j < cropSIZE_int_RGB; j = j + 9)
 			{
-				//*writePointer++ = *staringPointAddress_forRow++;
 				*(writePointer+j)     = *(staringPointAddress_forRow+j);
 				*(writePointer+j + 1) = *(staringPointAddress_forRow+j + 1); 
 				*(writePointer+j + 2) = *(staringPointAddress_forRow+j + 2); 
@@ -239,12 +203,7 @@ int main()
 		}
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_WRITE_IMAGE_TO_SHARED_MEMORY);
 		
-		/*
-		 * TODO: write image to shared memory
-		 * */
-		//alt_putstr("cpu_0 writing image to memory\n");
-		//delay(500);	//simulating writing time
-		//sram2sm_p3(test_ppm_1);
+		
 		
 		
 		
@@ -258,6 +217,7 @@ int main()
 			altera_avalon_mutex_unlock(mutex_1);
 			delay(1);
 			altera_avalon_mutex_lock(mutex_1, 1);
+
 		} else {
 			alt_putstr("cpu_0 cant open mutex 1 because does not own mutex 1\n");
 		}
@@ -287,40 +247,11 @@ int main()
 		}
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_READ_IMAGE_FROM_SHARED_MEMORY);
 		
-		/*
-		 * let all cpus start computation at the same time.
-		 * it is okay to have cpus wait for others to finish reading first
-		 * because cpu0 will still need to synchronise 
-		 * with all the results later anyways.
-		 * */
-		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_DISTRIBUTED_COMPUTING);
-		//alt_putstr("cpu_0 grants permission to compute to all cpus\n");
-		// altera_avalon_mutex_unlock(mutex_1);
-		// altera_avalon_mutex_unlock(mutex_2);
-		// altera_avalon_mutex_unlock(mutex_3);
-		// altera_avalon_mutex_unlock(mutex_4);
 		
 		
-		/*
-		 * wait until other cpu's finish computing
-		 * */
-		//alt_putstr("cpu_0 waiting for other cpus to finish computing\n");
 		
-		// while(
-		// 	!altera_avalon_mutex_is_mine(mutex_1) ||
-		// 	!altera_avalon_mutex_is_mine(mutex_2) ||
-		// 	!altera_avalon_mutex_is_mine(mutex_3) ||
-		// 	!altera_avalon_mutex_is_mine(mutex_4)
-		// 	)
-		// 	{
-		// 		altera_avalon_mutex_trylock(mutex_1, 1);
-		// 		altera_avalon_mutex_trylock(mutex_2, 1);
-		// 		altera_avalon_mutex_trylock(mutex_3, 1);
-		// 		altera_avalon_mutex_trylock(mutex_4, 1);
-		// 	}
-		//alt_putstr("other cpu's have finished computing\n");
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_DISTRIBUTED_COMPUTING);
 		
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_WRITE_RESULT_TO_SHARED_MEMORY);
 		/*
 		 * schedule writing result to memory
 		 * */
@@ -331,10 +262,11 @@ int main()
 			altera_avalon_mutex_unlock(mutex_1);
 			delay(1);
 			altera_avalon_mutex_lock(mutex_1, 1);
+
 		} else {
 			alt_putstr("cpu_0 cant open mutex 1 because does not own mutex 1\n");
 		}
-		
+
 		if(altera_avalon_mutex_is_mine(mutex_2)) {
 			// alt_putstr("cpu_0 giving control to cpu 2\n");
 			altera_avalon_mutex_unlock(mutex_2);
@@ -361,17 +293,15 @@ int main()
 		} else {
 			alt_putstr("cpu_0 cant open mutex 4 because does not own mutex 4\n");
 		}
-		
-		
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_WRITE_RESULT_TO_SHARED_MEMORY);
+
 		// alt_putstr("results written\n");
-		// delay(1);	
 		
 		/*
-		 * TODO: 
+		 * Read results 
 		 * */
 		
 		// alt_putstr("cpu_0 reading results from memory and compare them in order to get the final result\n");
-		//delay(100);	//simulating memory access
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_READ_RESULTS);
 		// results are stored at a consecutive memory space starting from shared + 4000, the order is x1,y1,value1, x2, y2, value2 ... 
 		// Datatype is INT16U
@@ -415,42 +345,32 @@ int main()
 		detected[1] = detected[1] + coords[1] + 2;
 
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_READ_RESULTS);
-		// alt_printf("cpu_0 read %x\n", *shared);
 		alt_printf("Count:	Final result: %x: %x, %x, %x\n", count, (count % 4),detected[0],detected[1],detected[2]);
 		
 
-		
-		/*
-		 * TODO: compare results 
-		 * */
-		//alt_putstr("cpu_0 comparing results\n");
-		// delay(10);	//simulating comparison time
-		
-		
-		/*
-		 * TODO: calculate coordinates
-		 * */
-		// alt_putstr("cpu_0 calculating coordinates\n");
-		// delay(10); //simulating coordinates time
-		
 		count ++;
 		// alt_printf("image number %x processed\n", count);
 		
 		
-		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_IMAGE_PROCESSING);
+		
 	    PERF_STOP_MEASURING (PERFORMANCE_COUNTER_0_BASE);
 
 	    perf_print_formatted_report
 			(PERFORMANCE_COUNTER_0_BASE,
 			ALT_CPU_FREQ,        // defined in "system.h"
 			5,                   // How many sections to print
-			"Total",
-			"writing image",
-			"reading image",
-			"computing",
-			"read results"
+			"Slave CPU Workload",
+			"Write Image",
+			"Read Image",
+			"Write Result",
+			"Read Results"
 			);
 	    
+#define SECTION_DISTRIBUTED_PROCESSING 			1
+#define SECTION_WRITE_IMAGE_TO_SHARED_MEMORY	2
+#define SECTION_READ_IMAGE_FROM_SHARED_MEMORY	3
+#define SECTION_WRITE_RESULT_TO_SHARED_MEMORY	4
+#define SECTION_READ_RESULTS					5
 	    //delay(500);	//nice wait
   }
   return 0;

@@ -1,5 +1,5 @@
 
-        .equ    delaycount,     12000
+        .equ    delaycount,     835
 #        .equ    delaycount,     170
         .text                   # Instructions follow
         .global delay           # Makes "main" globally known

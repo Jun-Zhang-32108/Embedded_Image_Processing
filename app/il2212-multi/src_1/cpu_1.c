@@ -11,7 +11,8 @@
 #define image_piece_h 12
 #define offset_size_length 32
 #define offset_size_height 8  // = 12 - 4
-#define cropSIZE_int_RGB 27  // = 36*3/4 
+#define cropSIZE_int_RGB 27  // = 36*3/4
+#define cropSIZE_TIMES_3 108
 extern void delay (int millisec);
 
 
@@ -143,7 +144,7 @@ int main()
 			}
 
 			// alt_printf("cpu_1 read %x\n", *image_piece);
-			//printMatrix(image_piece,image_piece_h, cropSIZE*3);
+			//printMatrix(image_piece,image_piece_h, cropSIZE_TIMES_3);
 			//signal read completion
 			altera_avalon_mutex_unlock(mutex_1);
 			//delay(1);
@@ -155,12 +156,20 @@ int main()
 			// alt_putstr("cpu_1 grayscaling\n");
 			//delay(100); 	//simulating read time
 			
+			INT16U j_by_3;
+			INT16U i_cropSIZE;
+			INT16U j_by_3_plus_i_cropSIZE;
+			
 			for ( i = 0; i < image_piece_h; i++)
 			{
+				i_cropSIZE = i * cropSIZE; 
 				//grayed[i] = grayed[0] + cropSIZE * i;
-				row_add = image_piece + i*cropSIZE*3;
-				for(j = 0; j < cropSIZE*3; j = j+36)
+				row_add = image_piece + i*cropSIZE_TIMES_3;
+				for(j = 0; j < cropSIZE_TIMES_3; j = j+36)
 				{
+					j_by_3 = j / 3;
+					j_by_3_plus_i_cropSIZE = j_by_3 + i_cropSIZE;
+					
 					//one algorithm to transform RGB value to grayscale value which is suitable for operation between 16-bit variables
 					//the good balance between speed and precision
 					//grayed[i][j/3] = ((inputMatrix[i][j]*38
@@ -169,40 +178,40 @@ int main()
 
 					//Another grayscale algorithm, lose some precison but increase the speed
 					//using loop unrolling, assume that we know the cropSIZE is 36
-					*(grayed+i*cropSIZE+j/3)   = (((*(row_add +j ))>>2 )
+					*(grayed+j_by_3_plus_i_cropSIZE)   = (((*(row_add +j ))>>2 )
 								 +((*(row_add +j+ 1))>>1 )
 								 +((*(row_add +j+ 2))>>3));
-					*(grayed+i*cropSIZE+j/3 + 1) = (((*(row_add +j + 3))>>2 )
+					*(grayed+j_by_3_plus_i_cropSIZE + 1) = (((*(row_add +j + 3))>>2 )
 								 +((*(row_add +j+ 4))>>1 )
 								 +((*(row_add +j+ 5))>>3));
-					*(grayed+i*cropSIZE+j/3 + 2) = (((*(row_add +j + 6 ))>>2 )
+					*(grayed+j_by_3_plus_i_cropSIZE + 2) = (((*(row_add +j + 6 ))>>2 )
 								 +((*(row_add +j+ 7))>>1 )
 								 +((*(row_add +j+ 8))>>3));
-					*(grayed+i*cropSIZE+j/3 + 3)= (((*(row_add +j + 9))>>2 )
+					*(grayed+j_by_3_plus_i_cropSIZE + 3)= (((*(row_add +j + 9))>>2 )
 								 +((*(row_add +j+ 10))>>1 )
 								 +((*(row_add +j+ 11))>>3));
-					*(grayed+i*cropSIZE+j/3 + 4) = (((*(row_add +j + 12))>>2 )
+					*(grayed+j_by_3_plus_i_cropSIZE + 4) = (((*(row_add +j + 12))>>2 )
 								 +((*(row_add +j+ 13))>>1 )
 								 +((*(row_add +j+ 14))>>3));
-					*(grayed+i*cropSIZE+j/3 + 5) = (((*(row_add +j + 15))>>2 )
+					*(grayed+j_by_3_plus_i_cropSIZE + 5) = (((*(row_add +j + 15))>>2 )
 								 +((*(row_add +j+ 16))>>1 )
 								 +((*(row_add +j+ 17))>>3));
-					*(grayed+i*cropSIZE+j/3 + 6) = (((*(row_add +j + 18))>>2 )
+					*(grayed+j_by_3_plus_i_cropSIZE + 6) = (((*(row_add +j + 18))>>2 )
 								 +((*(row_add +j+ 19 ))>>1 )
 								 +((*(row_add +j+ 20))>>3));
-					*(grayed+i*cropSIZE+j/3 + 7) = (((*(row_add +j + 21))>>2 )
+					*(grayed+j_by_3_plus_i_cropSIZE + 7) = (((*(row_add +j + 21))>>2 )
 								 +((*(row_add +j+ 22))>>1 )
 								 +((*(row_add +j+ 23))>>3));
-					*(grayed+i*cropSIZE+j/3 + 8) = (((*(row_add +j + 24))>>2 )
+					*(grayed+j_by_3_plus_i_cropSIZE + 8) = (((*(row_add +j + 24))>>2 )
 								 +((*(row_add +j+ 25))>>1 )
 								 +((*(row_add +j+ 26))>>3));
-					*(grayed+i*cropSIZE+j/3 + 9) = (((*(row_add +j + 27))>>2 )
+					*(grayed+j_by_3_plus_i_cropSIZE + 9) = (((*(row_add +j + 27))>>2 )
 								 +((*(row_add +j+ 28))>>1 )
 								 +((*(row_add +j+ 29))>>3));
-					*(grayed+i*cropSIZE+j/3 + 10) = (((*(row_add +j + 30))>>2 )
+					*(grayed+j_by_3_plus_i_cropSIZE + 10) = (((*(row_add +j + 30))>>2 )
 								 +((*(row_add +j+ 31 ))>>1 )
 								 +((*(row_add +j+ 32))>>3));
-					*(grayed+i*cropSIZE+j/3 + 11) = (((*(row_add +j + 33))>>2 )
+					*(grayed+j_by_3_plus_i_cropSIZE + 11) = (((*(row_add +j + 33))>>2 )
 								 +((*(row_add +j+ 34))>>1 )
 								 +((*(row_add +j+ 35))>>3));
 
@@ -214,105 +223,148 @@ int main()
 			* */
 			//alt_putstr("cpu_1 xcorr2'ing image\n");
 			//delay(100); 	//simulate xcorr time
+			INT16U i_times_32;
+			INT16U i_times_32_plus_j;
+			INT16U cropSIZE_TIMES_3_plus_1 = cropSIZE_TIMES_3 + 1;
+			INT16U cropSIZE_TIMES_3_plus_3 = cropSIZE_TIMES_3 + 3;
+			INT16U cropSIZE_plus_1 = cropSIZE + 1;
+			INT16U cropSIZE_plus_3 = cropSIZE + 3;
+			INT16U cropSIZE_times_2 = cropSIZE<<1;
+			INT16U cropSIZE_times_4 = cropSIZE<<2;
+			INT16U cropSIZE_times_4_plus_2 = cropSIZE_times_4 + 2; 
+			INT16U cropSIZE_times_2_plus_4 = cropSIZE_times_2 + 4;
+			max = 0;
 			
 			for ( i = 0; i < offset_size_height; i++)
 			{
+				i_times_32 = i<<5;
 				for( j = 0; j < offset_size_length; j=j+8)
 				{
 
 					// startingPoINT8UAddress = *inputMatrix + cropSIZE*i + j;
-
-					// // unroll the loop partially and assume the pattern we want to detected is fixed
-					// *(xcropp2ed + i*output_size_length + j) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + cropSIZE*2) + *(startingPoINT8UAddress + cropSIZE*2 +  4)
-					// 		+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + cropSIZE*4 +  2);
-					// //product = (*(startingPoINT8UAddress + cropSIZE*m + n));
-
-					// startingPoINT8UAddress = startingPoINT8UAddress+1;
-					// *(xcropp2ed + i*output_size_length + j + 1) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + cropSIZE*2) + *(startingPoINT8UAddress + cropSIZE*2 +  4)
-					// 		+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + cropSIZE*4 +  2);
-
-					// startingPoINT8UAddress = startingPoINT8UAddress+1;
-					// *(xcropp2ed + i*output_size_length + j + 2) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + cropSIZE*2) + *(startingPoINT8UAddress + cropSIZE*2 +  4)
-					// 		+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + cropSIZE*4 +  2);
-
-					// startingPoINT8UAddress = startingPoINT8UAddress+1;
-					// *(xcropp2ed + i*output_size_length + j + 3) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + cropSIZE*2) + *(startingPoINT8UAddress + cropSIZE*2 +  4)
-					// 		+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + cropSIZE*4 +  2);
-
-					// startingPoINT8UAddress = startingPoINT8UAddress+1;
-					// *(xcropp2ed + i*output_size_length + j + 4) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + cropSIZE*2) + *(startingPoINT8UAddress + cropSIZE*2 +  4)
-					// 		+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + cropSIZE*4 +  2);
-
-					// startingPoINT8UAddress = startingPoINT8UAddress+1;
-					// *(xcropp2ed + i*output_size_length + j + 5) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + cropSIZE*2) + *(startingPoINT8UAddress + cropSIZE*2 +  4)
-					// 		+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + cropSIZE*4 +  2);
-
-					// startingPoINT8UAddress = startingPoINT8UAddress+1;
-					// *(xcropp2ed + i*output_size_length + j + 6) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + cropSIZE*2) + *(startingPoINT8UAddress + cropSIZE*2 +  4)
-					// 		+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + cropSIZE*4 +  2);
-
-					// startingPoINT8UAddress = startingPoINT8UAddress+1;
-					// *(xcropp2ed + i*output_size_length + j + 7) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + cropSIZE*2) + *(startingPoINT8UAddress + cropSIZE*2 +  4)
-					// 		+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + cropSIZE*4 +  2);
-
-
-
+					i_times_32_plus_j = i_times_32 + j;
+					
+					
 					startingPoINT8UAddress = grayed + cropSIZE*i + j;
-					*(xcropp2ed + (i<<5) + j ) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + (cropSIZE<<1)) + *(startingPoINT8UAddress + (cropSIZE<<1) +  4)
-							+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + (cropSIZE<<2) +  2);
+					*(xcropp2ed + i_times_32_plus_j )= 
+							*(startingPoINT8UAddress + 2)
+							+ *(startingPoINT8UAddress + cropSIZE_plus_1)
+							+ *(startingPoINT8UAddress + cropSIZE_plus_3)
+							+ *(startingPoINT8UAddress + (cropSIZE_times_2))
+							+ *(startingPoINT8UAddress + cropSIZE_times_2_plus_4)
+							+ *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_1) 
+							+ *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_3) 
+							+ *(startingPoINT8UAddress + cropSIZE_times_4_plus_2);
 
-					startingPoINT8UAddress = startingPoINT8UAddress+1;
-					*(xcropp2ed + (i<<5) + j + 1 ) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + (cropSIZE<<1)) + *(startingPoINT8UAddress + (cropSIZE<<1) +  4)
-							+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + (cropSIZE<<2) +  2);
+					if(max < *(xcropp2ed + i_times_32_plus_j ))
+						{
+							max = *(xcropp2ed + i_times_32_plus_j );
+							output[0] = i;
+							output[1] = j;
+							output[2] = max;
+						}
+					startingPoINT8UAddress++;
+					*(xcropp2ed + i_times_32_plus_j + 1 ) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE_plus_1) + *(startingPoINT8UAddress + cropSIZE_plus_3) + *(startingPoINT8UAddress + (cropSIZE_times_2)) + *(startingPoINT8UAddress + cropSIZE_times_2_plus_4)
+							+ *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_1) + *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_3) + *(startingPoINT8UAddress + cropSIZE_times_4_plus_2);
 
-					startingPoINT8UAddress = startingPoINT8UAddress+1;
-					*(xcropp2ed + (i<<5) + j + 2) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + (cropSIZE<<1)) + *(startingPoINT8UAddress + (cropSIZE<<1) +  4)
-							+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + (cropSIZE<<2) +  2);
+					if(max < *(xcropp2ed + i_times_32_plus_j + 1 ))
+						{
+							max = *(xcropp2ed + i_times_32_plus_j + 1 );
+							output[0] = i;
+							output[1] = j + 1;
+							output[2] = max;
+						}
+					startingPoINT8UAddress++;
+					*(xcropp2ed + i_times_32_plus_j + 2) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE_plus_1) + *(startingPoINT8UAddress + cropSIZE_plus_3) + *(startingPoINT8UAddress + (cropSIZE_times_2)) + *(startingPoINT8UAddress + cropSIZE_times_2_plus_4)
+							+ *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_1) + *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_3) + *(startingPoINT8UAddress + cropSIZE_times_4_plus_2);
 
-					startingPoINT8UAddress = startingPoINT8UAddress+1;
-					*(xcropp2ed + (i<<5) + j + 3) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + (cropSIZE<<1)) + *(startingPoINT8UAddress + (cropSIZE<<1) +  4)
-							+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + (cropSIZE<<2) +  2);
+					if(max < *(xcropp2ed + i_times_32_plus_j + 2))
+						{
+							max = *(xcropp2ed + i_times_32_plus_j + 2);
+							output[0] = i;
+							output[1] = j + 2;
+							output[2] = max;
+						}
+					startingPoINT8UAddress++;
+					*(xcropp2ed + i_times_32_plus_j + 3) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE_plus_1) + *(startingPoINT8UAddress + cropSIZE_plus_3) + *(startingPoINT8UAddress + (cropSIZE_times_2)) + *(startingPoINT8UAddress + cropSIZE_times_2_plus_4)
+							+ *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_1) + *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_3) + *(startingPoINT8UAddress + cropSIZE_times_4_plus_2);
 
-					startingPoINT8UAddress = startingPoINT8UAddress+1;
-					*(xcropp2ed + (i<<5) + j + 4) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + (cropSIZE<<1)) + *(startingPoINT8UAddress + (cropSIZE<<1) +  4)
-							+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + (cropSIZE<<2) +  2);
+					if(max < *(xcropp2ed + i_times_32_plus_j + 3))
+						{
+							max = *(xcropp2ed + i_times_32_plus_j + 3);
+							output[0] = i;
+							output[1] = j + 3;
+							output[2] = max;
+						}
+					startingPoINT8UAddress++;
+					*(xcropp2ed + i_times_32_plus_j + 4) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE_plus_1) + *(startingPoINT8UAddress + cropSIZE_plus_3) + *(startingPoINT8UAddress + (cropSIZE_times_2)) + *(startingPoINT8UAddress + cropSIZE_times_2_plus_4)
+							+ *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_1) + *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_3) + *(startingPoINT8UAddress + cropSIZE_times_4_plus_2);
 
-					startingPoINT8UAddress = startingPoINT8UAddress+1;
-					*(xcropp2ed + (i<<5) + j + 5) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + (cropSIZE<<1)) + *(startingPoINT8UAddress + (cropSIZE<<1) +  4)
-							+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + (cropSIZE<<2) +  2);
+					if(max < *(xcropp2ed + i_times_32_plus_j + 4))
+						{
+							max = *(xcropp2ed + i_times_32_plus_j + 4);
+							output[0] = i;
+							output[1] = j + 4;
+							output[2] = max;
+						}
+					startingPoINT8UAddress++;
+					*(xcropp2ed + i_times_32_plus_j + 5) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE_plus_1) + *(startingPoINT8UAddress + cropSIZE_plus_3) + *(startingPoINT8UAddress + (cropSIZE_times_2)) + *(startingPoINT8UAddress + cropSIZE_times_2_plus_4)
+							+ *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_1) + *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_3) + *(startingPoINT8UAddress + cropSIZE_times_4_plus_2);
 
-					startingPoINT8UAddress = startingPoINT8UAddress+1;
-					*(xcropp2ed + (i<<5) + j + 6) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + (cropSIZE<<1)) + *(startingPoINT8UAddress + (cropSIZE<<1) +  4)
-							+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + (cropSIZE<<2) +  2);
+					if(max < *(xcropp2ed + i_times_32_plus_j + 5))
+						{
+							max = *(xcropp2ed + i_times_32_plus_j + 5);
+							output[0] = i;
+							output[1] = j + 5;
+							output[2] = max;
+						}
+					startingPoINT8UAddress++;
+					*(xcropp2ed + i_times_32_plus_j + 6) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE_plus_1) + *(startingPoINT8UAddress + cropSIZE_plus_3) + *(startingPoINT8UAddress + (cropSIZE_times_2)) + *(startingPoINT8UAddress + cropSIZE_times_2_plus_4)
+							+ *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_1) + *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_3) + *(startingPoINT8UAddress + cropSIZE_times_4_plus_2);
 
-					startingPoINT8UAddress = startingPoINT8UAddress+1;
-					*(xcropp2ed + (i<<5) + j + 7) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE +  1) + *(startingPoINT8UAddress + cropSIZE +  3) + *(startingPoINT8UAddress + (cropSIZE<<1)) + *(startingPoINT8UAddress + (cropSIZE<<1) +  4)
-							+ *(startingPoINT8UAddress + cropSIZE*3 +  1) + *(startingPoINT8UAddress + cropSIZE*3 +  3) + *(startingPoINT8UAddress + (cropSIZE<<2) +  2);
+					if(max < *(xcropp2ed + i_times_32_plus_j + 6))
+						{
+							max = *(xcropp2ed + i_times_32_plus_j + 6);
+							output[0] = i;
+							output[1] = j + 6;
+							output[2] = max;
+						}
+					
+					startingPoINT8UAddress++;
+					*(xcropp2ed + i_times_32_plus_j + 7) = *(startingPoINT8UAddress + 2) + *(startingPoINT8UAddress + cropSIZE_plus_1) + *(startingPoINT8UAddress + cropSIZE_plus_3) + *(startingPoINT8UAddress + (cropSIZE_times_2)) + *(startingPoINT8UAddress + cropSIZE_times_2_plus_4)
+							+ *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_1) + *(startingPoINT8UAddress + cropSIZE_TIMES_3_plus_3) + *(startingPoINT8UAddress + cropSIZE_times_4_plus_2);
 
+					if(max < *(xcropp2ed + i_times_32_plus_j + 7))
+						{
+							max = *(xcropp2ed + i_times_32_plus_j + 7);
+							output[0] = i;
+							output[1] = j + 7;
+							output[2] = max;
+						}
 				}		
 			}
 
 			//printMatrix_INT16U(xcropp2ed,offset_size_height, offset_size_length);
 
-			max = 0;
+			
 			/*
 			* TODO: offsetting here
 			* */
 			// alt_putstr("cpu_1 offsetting\n");
 			//delay(10);	//simulating offsetting time
 			
-
-			for(i = 0; i<offset_size_height; i++)
-				for(j = 0; j <offset_size_length; j++)
-				{
-					if(max < *(xcropp2ed+offset_size_length*i+j))
-					{
-						max = *(xcropp2ed+offset_size_length*i+j);
-						output[0] = i;
-						output[1] = j;
-						output[2] = max;
-					}
-				}
+//			INTtemp
+//			for(i = 0; i<offset_size_height; i++)
+//				for(j = 0; j <offset_size_length; j++)
+//				{
+//					if(max < *(xcropp2ed+offset_size_length*i+j))
+//					{
+//						max = *(xcropp2ed+offset_size_length*i+j);
+//						output[0] = i;
+//						output[1] = j;
+//						output[2] = max;
+//					}
+//				}
 
 
 
