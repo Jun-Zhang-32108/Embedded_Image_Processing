@@ -32,13 +32,22 @@
 
 //Define two new datatypes to save memory. Since the maximum grayscale value is 255, INT8U (8 bits) should be big enough to hold most variables.
 //Only when we call xcorr2 functions the dot product value is possible to be greater than 255. So we use INT16U to hold that value.  
-typedef unsigned char INT8U;
-typedef unsigned short INT16U;
+typedef alt_u8 INT8U;
+typedef alt_u16 INT16U;
 
 #define dSPAN  15
 #define cropSIZE  36
 #define xPATTERN_length  5
 #define offset_size_length 32
+
+// #define debug 1
+#define performance 1
+
+#ifdef debug
+#include "ascii_gray.h" 
+#endif
+
+INT8U shiftOffset = 0;
 
 //INT8U dSPAN = 15;
 //Here I use 33 instead of 31 because if we use 31, it may not capture the whole pattern when the pattern move 15 pixels in one frame
@@ -117,7 +126,7 @@ void groupV_3(INT8U *inputMatrix, INT8U matrix_row, INT8U matrix_col, INT8U* gro
 	INT8U i;
 	INT8U j;
 	INT8U* row_add;
-
+	// printf("%d\n", *inputMatrix );
 	for ( i = 0; i < matrix_row; i++)
 	{
 		//group[i] = group[0] + matrix_col * i;
@@ -135,6 +144,9 @@ void groupV_3(INT8U *inputMatrix, INT8U matrix_row, INT8U matrix_col, INT8U* gro
 			*(group+i*matrix_col+j/3)   = (((*(row_add +j ))>>2 )
 						 +((*(row_add +j+ 1))>>1 )
 						 +((*(row_add +j+ 2))>>3));
+			//printf("value: %d\n",(((*(row_add +j ))>>2 )
+						 // +((*(row_add +j+ 1))>>1 )
+						 // +((*(row_add +j+ 2))>>3)));
 			*(group+i*matrix_col+j/3 + 1) = (((*(row_add +j + 3))>>2 )
 						 +((*(row_add +j+ 4))>>1 )
 						 +((*(row_add +j+ 5))>>3));
@@ -172,8 +184,9 @@ void groupV_3(INT8U *inputMatrix, INT8U matrix_row, INT8U matrix_col, INT8U* gro
 
 		}		
 	}
-	//printf("Grayed Matrix\n");
-	//printMatrix(group, matrix_row, matrix_col);
+	// printf("Grayed Matrix\n");
+	// printMatrix(group, matrix_row, matrix_col);
+	// printf("grayed[0][0]:	%d\n",*group);
 }
 // ############################################################################################
 
@@ -188,8 +201,27 @@ INT8U* crop(INT8U startingPoINT8U_x, INT8U startingPoINT8U_y, INT8U* inputMatrix
 {
 	INT8U i;
 	INT8U j;
-	INT8U* staringPointAddress_forRow;
+	int* staringPointAddress_forRow;
 	INT8U* startingPoINT8UAddress = inputMatrix+img_w * startingPoINT8U_x + startingPoINT8U_y*3;
+	//printf("inputMatrix: %d\n",*(inputMatrix));
+	// printf("startingPoINT8UAddress: %d\n",*(startingPoINT8UAddress));
+	// printf("startingPoINT8UAddress: %d\n",startingPoINT8UAddress );
+	// if((int)startingPoINT8UAddress % 4 == 1)
+	// {
+	// 	startingPoINT8UAddress -= 9;
+	// 	shiftOffset = 2;
+	// }
+	// else if((int)startingPoINT8UAddress % 4 == 2)
+	// {
+	// 	startingPoINT8UAddress += 6;
+	// 	shiftOffset = -2;
+	if((int)startingPoINT8UAddress % 4 == 3)
+	{
+		// startingPoINT8UAddress -= 3;
+		shiftOffset = 1;
+	}
+	else
+		shiftOffset = 0;
 	// printf("Staring Point Address in memory: %d\n", startingPoINT8UAddress); 
 	int** group = (int**)calloc(cropSIZE, sizeof(int*));
     if(group == NULL)
@@ -203,21 +235,27 @@ INT8U* crop(INT8U startingPoINT8U_x, INT8U startingPoINT8U_y, INT8U* inputMatrix
     	printf("Calloc Error! Inside the crop function, location2\n");
     	//exit(0);
     }
+    //staringPointAddress_forRow = (int*)(startingPoINT8UAddress - img_w);
 	for ( i = 0; i < cropSIZE; i++)
 	{
 		group[i] = group[0] + i*cropSIZE*3/4;
-		staringPointAddress_forRow = startingPoINT8UAddress + img_w*i;
+		// staringPointAddress_forRow += (img_w/4);
+		staringPointAddress_forRow = (int*)(startingPoINT8UAddress + img_w*i);
+		
+		//printf("staringPointAddress_forRow: %d\n",(startingPoINT8UAddress + img_w*i) );
+
 		for( j = 0; j < cropSIZE*3/4; j++)
 		{
 			//group[i][j] = *(startingPoINT8UAddress + img_w*i + j); 
-			group[i][j]   = *((int*)(staringPointAddress_forRow+j*4)); 
+			group[i][j]   = *(staringPointAddress_forRow+j); 
 			// group[i][j+1] = *(staringPointAddress_forRow + j+1); 
 			// group[i][j+2] = *(staringPointAddress_forRow + j+2); 
 
 		}		
 	}
 	// printf("Cropped Matrix\n");
-	// printMatrix(group, cropSIZE, cropSIZE*3);
+	// printMatrix((INT8U*)group[0], cropSIZE, cropSIZE*3);
+	// printf("group[0][0]: %d\n",*((INT8U*)group[0]));
 	return (INT8U*)group[0];
 }
 // ############################################################################################
@@ -335,7 +373,7 @@ void posMax_coords(INT16U* inputMatrix, INT8U cropCoord_x, INT8U cropCoord_y, IN
 			}
 		}
 	*returnVar 	   = output[0] + cropCoord_x + 2;
-	*(returnVar+1) = output[1] + cropCoord_y + 2;
+	*(returnVar+1) = output[1] + cropCoord_y + 2 - shiftOffset;
 	*(returnVar+2) = output[2];
 	// printf("CropPoints:	%d, %d\n",cropCoord_x,cropCoord_y);
  // 	printf("Offset:	    %d, %d, %d\n",output[0],output[1], output[2]);
@@ -361,7 +399,7 @@ void calcCoord(INT16U *previousPoINT8U, INT8U img_h, INT8U img_w, INT8U* returnV
 		output[1] = img_w - cropSIZE;
 	else
 		output[1] = previousPoINT8U[1] - dSPAN ;
-	//printf("Next cropped point: %d, %d . \n",output[0],output[1]);
+	// printf("Next cropped point: %d, %d . \n",output[0],output[1]);
 	*returnVar 		 = output[0];
 	*(returnVar + 1) = output[1];
 	//printf("Return point: %d, %d . \n",returnVar[0],returnVar[1]);
@@ -375,7 +413,7 @@ INT8U main()
 	//Third value of the list is the value of maximum color
 	//Later is the R, G, B values of each pixel point, respectively, all the RGB values are oganized in an consecutive order accroding to C language convention
 
-    INT8U counter;
+    int counter;
 	INT8U *image;
 	INT8U img_h = 0;
 	INT8U img_w = 0;
@@ -389,8 +427,8 @@ INT8U main()
 	INT16U xcropp2ed[offset_size_length*offset_size_length];
 	// alt_u64 xcropp2ed[offset_size_length*offset_size_length/4];
 
-    img_w = image_sequence[0][0];
-	img_h = image_sequence[0][1];
+    img_w = image_sequence[0][1];
+	img_h = image_sequence[0][2];
 	//Extended by the RGB value
 	img_w_0 = img_w * 3;
 
@@ -399,47 +437,98 @@ INT8U main()
 	detected[1] = 0;
 
 
-    for( counter = 0; counter < sequence_length; counter++)
+	#ifdef performance
+	PERF_RESET(PERFORMANCE_COUNTER_0_BASE);
+	PERF_START_MEASURING (PERFORMANCE_COUNTER_0_BASE);
+		
+	PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
+
+	#endif
+
+    for( counter = 0; counter<400 ; counter++)
     {
     	
-		image = image_sequence[counter] + 3;
+		#ifdef debug
+		if(counter == 4)
+			while(1)
+			{}
+		#endif
 
+		if(counter % 4 == 0)
+		{
+			detected[0] = 0;
+			detected[1] = 0;
+			detected[2] = 0;			
+		}
+
+		image = image_sequence[counter%4] + 4;
+		// printf("image[0]: %d\n",*image);
+
+		#ifdef debug
 	    PERF_RESET(PERFORMANCE_COUNTER_0_BASE);
 		PERF_START_MEASURING (PERFORMANCE_COUNTER_0_BASE);
 		
 	    PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
+
+	    #endif
 	    calcCoord(detected, img_h, img_w, coords );
+
+	    #ifdef debug
 	    PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
 
 	    PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CROPSDF);
+	    // printf("Coords: %d, %d\n",coords[0],coords[1]);
+	    #endif
 
 	    croped = crop(coords[0],coords[1],image, img_w_0);
 
+		#ifdef debug
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CROPSDF);
 
+		
+		printMatrix(croped, cropSIZE, cropSIZE*3);
+		
+
 	    PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_GRAYSDF);
+
+	    #endif
 	    groupV_3(croped, cropSIZE, cropSIZE, grayed);
 
+		#ifdef debug
+		printAscii(grayed, cropSIZE,cropSIZE);
+		#endif
+
 	   	free(croped);
+
+	   	#ifdef debug
 		PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_GRAYSDF);
 
 		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_XCORR2SDF);
-
+		#endif
 	   	xcorr2(grayed, cropSIZE, xcropp2ed);
 	   	
 
+	   	#ifdef debug
 	   	PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_XCORR2SDF);
 
-
 	    PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
+	    #endif
+
 
 	    posMax_coords(xcropp2ed, coords[0], coords[1], detected);
 	    
+	    printf("Test image %d : %d , %d \n\n",counter,detected[1],detected[0]);
 
+	    #ifdef debug
 	    PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCPOSSDF);
 	    
-	    printf("Test image %d : %d , %d \n",counter,detected[0],detected[1]);
 	    
+		
+		printAsciiHidden(grayed, cropSIZE, cropSIZE,
+		      detected[1] - coords[1], detected[0] - coords[0],
+		      2, detected[1]/8);
+			    
+
 	    PERF_STOP_MEASURING (PERFORMANCE_COUNTER_0_BASE);
 
 	    perf_print_formatted_report
@@ -452,8 +541,22 @@ INT8U main()
 				"xcorr2SDF",
 				"calcPosSDF"
 	    		);
+	    #endif
     }
+	#ifdef performance
+	PERF_END(PERFORMANCE_COUNTER_0_BASE, SECTION_CALCCOORDSDF);
+	PERF_STOP_MEASURING (PERFORMANCE_COUNTER_0_BASE);
 
+
+	perf_print_formatted_report
+	    (PERFORMANCE_COUNTER_0_BASE,
+	    ALT_CPU_FREQ,        // defined in "system.h"
+	    1,                   // How many sections to print
+	    "Processing time in Total"
+	    );
+
+
+	#endif
 
 	return 0;
 }
