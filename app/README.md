@@ -1,6 +1,6 @@
 # Application Development Folder
 
-This folder will be used to develop all the different versions of the application required for the lab course. It contains a few "Hello World" examples and a stub with the main utilities for your image processing application.
+This folder contains the example codes (under the subfolders with prefix "hello\_\*") for the projects as well as the three main applications we developed for the project (under the subfoloders with prefix "il2212-\*"). 
 
 Before your first usage please check and _understand_ the compilation/run scripts. For example, open the script in the `hello_world` project in a code editor (here `emacs`):
 
