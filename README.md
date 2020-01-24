@@ -5,9 +5,8 @@ This is the project structure used throughout the IL2212 - Embedded Software Lab
 
 ## Contributors
 
-* _Student 1_ (email1@kth.se)
-* _Student 2_ (email2@kth.se)
-* _Group ##_
+* Jun Zhang
+* Jaakko Laiho
 
 ## Contents 
 
