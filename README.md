@@ -1,7 +1,12 @@
-IL2212 - Embedded Software Lab Project
+Embedded Image Processing Application on a Multi-core Platform on FPGA
 ======================================
 
-This is the project structure used throughout the IL2212 - Embedded Software Lab course held at KTH in VT19. Please consult the [Canvas course page](https://kth.instructure.com/courses/7693/pages/laboratory-information-about-the-project) for further information and documentation.
+This project is a comprehensive project with FPGA. We designed and implemented the FPGA hardware architecture using Qsys and Verilog.Also, we developed three image detection and processing applications that can run on different hardware resources:
+1. on a single core without operating system i.e. Bare-metal;
+2. on a single core using the real-time operating system MicroC/OS-II;
+3. on the multiprocessor without operating system while satisfying design constraints on worst case throughput and memory footprint.
+
+In addition to these, we also developed a debug mode for software testing.
 
 ## Contributors
 
