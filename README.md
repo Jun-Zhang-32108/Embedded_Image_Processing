@@ -1,4 +1,4 @@
-Embedded Image Processing Application on a Multi-core Platform on FPGA
+Embedded Image Processing Application on a Multi-core Platform with FPGA
 ======================================
 
 This project is a comprehensive project with FPGA. We designed and implemented the FPGA hardware architecture using Qsys and Verilog.Also, we developed three image detection and processing applications that can run on different hardware resources:
@@ -17,7 +17,7 @@ In addition to these, we also developed a debug mode for software testing.
 
 This repository is organized as follows:
 
- * `app` contains source files for the lab applications, grouped in subfolders by project. It also contains build automation scripts for helping with the lab tasks.
+ * `app` contains source files for the applications, grouped in subfolders by project. It also contains build automation scripts for helping with the lab tasks.
  * `bsp` is an empty folder which will contain the generated Board Support Packages for different configurations.
  * `hardware` contains files describing the custom hardware platform. 
  * `model` contains the (ready-to-build) ForSyDe-Haskell project which represents the executable functional specification of the application that needs to be implemented on the given hardware platform.
