@@ -6,7 +6,7 @@ This project is a comprehensive project with FPGA. It is a course project of IL2
 2. on a single core using the real-time operating system MicroC/OS-II;
 3. on the multiprocessor without operating system while satisfying design constraints on worst case throughput and memory footprint.
 
-In addition to these, we also developed a debug mode for software testing.
+In addition to these, we also developed a debug mode for software testing. For more details of what we have done, please refer to the report under the folder "report".
 
 ## Contributors
 
