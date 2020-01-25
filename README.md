@@ -1,7 +1,7 @@
 Embedded Image Processing Application on a Multi-core Platform with FPGA
 ======================================
 
-This project is a comprehensive project with FPGA. We designed and implemented the FPGA hardware architecture using Qsys and Verilog.Also, we developed three image detection and processing applications that can run on different hardware resources:
+This project is a comprehensive project with FPGA. It is a course project of IL2212 - Embedded Software Lab course held at KTH in VT19. We designed and implemented the FPGA hardware architecture using Qsys and Verilog.Also, we developed three image detection and processing applications that can run on different hardware resources:
 1. on a single core without operating system i.e. Bare-metal;
 2. on a single core using the real-time operating system MicroC/OS-II;
 3. on the multiprocessor without operating system while satisfying design constraints on worst case throughput and memory footprint.
